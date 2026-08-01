@@ -24,17 +24,17 @@ const ChoiceResultPage = ({
   roomName,
   targetName,
   question,
-  options = [],
-  counts = {},
-  trueAnswer,
-  myAnswer,
+  optionResults = [],
+  targetAnswerOptionId,
+  mostSelectedOptionIds = [],
+  mySelectedOptionId,
   voteUpdate,
   onNext,
   onLeave,
 }) => {
   const [voted, setVoted] = useState(false);
-  const maxCount = Math.max(0, ...options.map((option) => counts[option] ?? 0));
-  const isCorrect = myAnswer !== undefined && myAnswer === trueAnswer;
+  const sortedOptions = [...optionResults].sort((a, b) => a.displayOrder - b.displayOrder);
+  const isCorrect = mySelectedOptionId !== undefined && mySelectedOptionId === targetAnswerOptionId;
 
   const handleNext = () => {
     setVoted(true);
@@ -51,16 +51,15 @@ const ChoiceResultPage = ({
           <p className="whitespace-pre-wrap text-head2-1 text-white">{question}</p>
         </div>
 
-        {myAnswer !== undefined && (
+        {mySelectedOptionId !== undefined && (
           <img src={isCorrect ? CorrectIcon : IncorrectIcon} className="size-12" />
         )}
 
         <div className="flex flex-col gap-2.5">
-          {options.map((option) => {
-            const count = counts[option] ?? 0;
-            const isTrueAnswer = option === trueAnswer;
-            const isMyAnswer = option === myAnswer;
-            const isMostVoted = count === maxCount && maxCount > 0;
+          {sortedOptions.map((option) => {
+            const isTrueAnswer = option.optionId === targetAnswerOptionId;
+            const isMyAnswer = option.optionId === mySelectedOptionId;
+            const isMostVoted = mostSelectedOptionIds.includes(option.optionId);
             // 정답이 아니면서 최다 득표거나 내가 고른 오답인 행은 파란색으로 구분한다
             // (정답=최다득표/오답=최다득표가 서로 다른 옵션일 때 둘 다 눈에 띄어야 함).
             const isHighlighted = !isTrueAnswer && (isMostVoted || isMyAnswer);
@@ -68,7 +67,7 @@ const ChoiceResultPage = ({
 
             return (
               <div
-                key={option}
+                key={option.optionId}
                 className={[
                   "relative flex items-center justify-between overflow-hidden rounded-[30px] py-4 pl-5 pr-7",
                   isTrueAnswer ? "bg-main-pink" : isHighlighted ? "bg-main-blue" : "bg-gray-950",
@@ -94,9 +93,9 @@ const ChoiceResultPage = ({
                     {isMostVoted && <Badge tone={badgeTone}>최다 득표</Badge>}
                     {isMyAnswer && <Badge tone={badgeTone}>내가 고른 선택지</Badge>}
                   </div>
-                  <p className="text-head3-1 text-white">{option}</p>
+                  <p className="text-head3-1 text-white">{option.content}</p>
                 </div>
-                <p className="relative text-head2-1 text-white">{count}명</p>
+                <p className="relative text-head2-1 text-white">{option.count}명</p>
               </div>
             );
           })}

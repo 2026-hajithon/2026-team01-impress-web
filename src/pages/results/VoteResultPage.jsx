@@ -16,18 +16,18 @@ const RANK_IMAGES = [Rank1, Rank2, Rank3, Rank4, Rank5, Rank6, Rank7, Rank8];
 
 // entry.rank가 이미 내려오면 그대로 쓰고(동점 처리를 서버가 맡음), 없을 때만
 // 앞에서부터 표를 비교해서 동점자는 같은 등수를 받도록 계산한다(1,2,2,4 방식).
-// ranking은 votes 내림차순으로 정렬되어 들어온다고 가정한다.
-const resolveRanks = (ranking) => {
+// votes는 count 내림차순으로 정렬되어 들어온다고 가정한다.
+const resolveRanks = (votes) => {
   const ranks = [];
 
-  ranking.forEach((entry, idx) => {
+  votes.forEach((entry, idx) => {
     if (entry.rank !== undefined) {
       ranks.push(entry.rank);
     } else if (idx === 0) {
       ranks.push(1);
     } else {
-      const prevEntry = ranking[idx - 1];
-      ranks.push(prevEntry.votes === entry.votes ? ranks[idx - 1] : idx + 1);
+      const prevEntry = votes[idx - 1];
+      ranks.push(prevEntry.count === entry.count ? ranks[idx - 1] : idx + 1);
     }
   });
 
@@ -35,9 +35,9 @@ const resolveRanks = (ranking) => {
 };
 
 // Figma "공동질문 결과"(226:1763)
-const VoteResultPage = ({ roomName, question, ranking = [], voteUpdate, onNext, onLeave }) => {
+const VoteResultPage = ({ roomName, question, votes = [], voteUpdate, onNext, onLeave }) => {
   const [voted, setVoted] = useState(false);
-  const ranks = resolveRanks(ranking);
+  const ranks = resolveRanks(votes);
 
   const handleNext = () => {
     setVoted(true);
@@ -55,7 +55,7 @@ const VoteResultPage = ({ roomName, question, ranking = [], voteUpdate, onNext, 
         </div>
 
         <div className="flex flex-col gap-5">
-          {ranking.map((entry, idx) => {
+          {votes.map((entry, idx) => {
             const rank = ranks[idx];
             const rankImage = RANK_IMAGES[Math.min(rank, RANK_IMAGES.length) - 1];
 
@@ -63,8 +63,8 @@ const VoteResultPage = ({ roomName, question, ranking = [], voteUpdate, onNext, 
               <div key={entry.participantId} className="flex items-center gap-5">
                 <img src={rankImage} alt={`${rank}등`} className="size-11.25 shrink-0" />
                 <div className="flex flex-1 items-center justify-between">
-                  <p className="text-sub1-1 text-white">{entry.name}</p>
-                  <p className="text-sub1-1 text-white">{entry.votes}표</p>
+                  <p className="text-sub1-1 text-white">{entry.participantName}</p>
+                  <p className="text-sub1-1 text-white">{entry.count}표</p>
                 </div>
               </div>
             );

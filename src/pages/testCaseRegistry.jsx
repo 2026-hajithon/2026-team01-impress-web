@@ -31,7 +31,12 @@ const ANSWER_REPORT_CARD = REPORT_CARDS.find((card) => card.qType === "BLANK");
 const CHOICE_REPORT_CARD = REPORT_CARDS.find((card) => card.qType !== "BLANK");
 
 const CHOICE_QUESTION = `이 사람의 형제 관계는\n어떻게 될까?`;
-const CHOICE_OPTIONS = ["남매", "자매", "외동", "형제"];
+const CHOICE_OPTIONS = [
+  { optionId: 11, content: "남매", displayOrder: 1 },
+  { optionId: 12, content: "자매", displayOrder: 2 },
+  { optionId: 13, content: "외동", displayOrder: 3 },
+  { optionId: 14, content: "형제", displayOrder: 4 },
+];
 const VOTE_QUESTION = `어렸을 때, 가장 엄마 말을\n안들었을 것 같은 사람은?`;
 
 // 테스트 페이지 메뉴 구조. 케이스마다 실제 화면 컴포넌트에 다른 목 데이터를 꽂아 넣을 뿐,
@@ -148,10 +153,13 @@ export const TEST_CASE_GROUPS = [
             roomName={ROOM_NAME}
             targetName="김태현"
             question={CHOICE_QUESTION}
-            options={CHOICE_OPTIONS}
-            counts={{ 남매: 9, 자매: 0, 외동: 0, 형제: 0 }}
-            trueAnswer="남매"
-            myAnswer={undefined}
+            optionResults={CHOICE_OPTIONS.map((option) => ({
+              ...option,
+              count: option.optionId === 11 ? 9 : 0,
+            }))}
+            targetAnswerOptionId={11}
+            mostSelectedOptionIds={[11]}
+            mySelectedOptionId={undefined}
             voteUpdate={{ votedCount: 2, requiredCount: 4 }}
             onNext={() => logTestClick("객관식 결과 다음으로", { case: "tie" })}
           />
@@ -166,10 +174,15 @@ export const TEST_CASE_GROUPS = [
             roomName={ROOM_NAME}
             targetName="김태현"
             question={CHOICE_QUESTION}
-            options={CHOICE_OPTIONS}
-            counts={{ 남매: 3, 자매: 4, 외동: 2, 형제: 0 }}
-            trueAnswer="남매"
-            myAnswer={undefined}
+            optionResults={[
+              { ...CHOICE_OPTIONS[0], count: 3 },
+              { ...CHOICE_OPTIONS[1], count: 4 },
+              { ...CHOICE_OPTIONS[2], count: 2 },
+              { ...CHOICE_OPTIONS[3], count: 0 },
+            ]}
+            targetAnswerOptionId={11}
+            mostSelectedOptionIds={[12]}
+            mySelectedOptionId={undefined}
             voteUpdate={{ votedCount: 2, requiredCount: 4 }}
             onNext={() => logTestClick("객관식 결과 다음으로", { case: "split" })}
           />
@@ -184,10 +197,13 @@ export const TEST_CASE_GROUPS = [
             roomName={ROOM_NAME}
             targetName="김태현"
             question={CHOICE_QUESTION}
-            options={CHOICE_OPTIONS}
-            counts={{ 남매: 3, 자매: 0, 외동: 0, 형제: 0 }}
-            trueAnswer="남매"
-            myAnswer="남매"
+            optionResults={CHOICE_OPTIONS.map((option) => ({
+              ...option,
+              count: option.optionId === 11 ? 3 : 0,
+            }))}
+            targetAnswerOptionId={11}
+            mostSelectedOptionIds={[11]}
+            mySelectedOptionId={11}
             voteUpdate={{ votedCount: 2, requiredCount: 4 }}
             onNext={() => logTestClick("객관식 결과 다음으로", { case: "correct" })}
           />
@@ -202,10 +218,15 @@ export const TEST_CASE_GROUPS = [
             roomName={ROOM_NAME}
             targetName="김태현"
             question={CHOICE_QUESTION}
-            options={CHOICE_OPTIONS}
-            counts={{ 남매: 3, 자매: 2, 외동: 0, 형제: 0 }}
-            trueAnswer="남매"
-            myAnswer="자매"
+            optionResults={[
+              { ...CHOICE_OPTIONS[0], count: 3 },
+              { ...CHOICE_OPTIONS[1], count: 2 },
+              { ...CHOICE_OPTIONS[2], count: 0 },
+              { ...CHOICE_OPTIONS[3], count: 0 },
+            ]}
+            targetAnswerOptionId={11}
+            mostSelectedOptionIds={[11]}
+            mySelectedOptionId={12}
             voteUpdate={{ votedCount: 2, requiredCount: 4 }}
             onNext={() => logTestClick("객관식 결과 다음으로", { case: "incorrect" })}
           />
@@ -224,10 +245,10 @@ export const TEST_CASE_GROUPS = [
           <VoteResultPage
             roomName={ROOM_NAME}
             question={VOTE_QUESTION}
-            ranking={MOCK_PARTICIPANTS.map((p, idx) => ({
+            votes={MOCK_PARTICIPANTS.map((p, idx) => ({
               participantId: p.participantId,
-              name: p.name,
-              votes: Math.max(0, 4 - idx),
+              participantName: p.name,
+              count: Math.max(0, 4 - idx),
             }))}
             voteUpdate={{ votedCount: 2, requiredCount: 4 }}
             onNext={() => logTestClick("공통 결과 다음으로")}

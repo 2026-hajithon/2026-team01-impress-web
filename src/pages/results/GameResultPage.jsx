@@ -9,6 +9,7 @@ import ReportCardView from "@components/games/ReportCardView";
 import { buildReportCards } from "@utils/reportCards";
 import Header from "@components/Header";
 import Button from "@components/Button";
+import OnboardingPage from "@pages/onboardings/OnboardingPage";
 
 const formatDate = (date = new Date()) =>
   `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(
@@ -17,6 +18,7 @@ const formatDate = (date = new Date()) =>
 
 // 파일 시스템에서 쓸 수 없는 문자만 제거한다 (모임방/사람 이름은 자유 입력이라 슬래시 등이 섞일 수 있음).
 const sanitizeFileNamePart = (value = "") => value.replace(/[\\/:*?"<>|]+/g, "").trim();
+const wait = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
 
 // Figma "게임 종료"(266:4430) -> "결과지_주관식+공동"(282:5051) / "결과지_객관식+공동"(282:5171)
 const GameResultPage = () => {
@@ -25,6 +27,7 @@ const GameResultPage = () => {
 
   const roomName = sessionStorage.getItem("roomName") ?? "";
   const participantId = Number(sessionStorage.getItem("participantId"));
+  const forceMock = sessionStorage.getItem("gameMode") === "mock";
 
   const [phase, setPhase] = useState("ended"); // ended | loading | report
   const [cards, setCards] = useState([]);
@@ -39,6 +42,15 @@ const GameResultPage = () => {
 
   const handleViewResult = async () => {
     setPhase("loading");
+
+    if (forceMock) {
+      await wait(3000);
+      setCards(buildReportCards(MOCK_FINAL_RESULT));
+      setMyName(sessionStorage.getItem("hostName") ?? MOCK_FINAL_RESULT.participants[0]?.name ?? "");
+      setMockMode(true);
+      setPhase("report");
+      return;
+    }
 
     try {
       const result = await RoomAPI.getResult(roomCode, participantId);
@@ -105,7 +117,8 @@ const GameResultPage = () => {
   const handleBackToWaiting = () => navigate(`/rooms/${roomCode}/waiting`);
 
   if (phase !== "report") {
-    return <GameEndPage loading={phase === "loading"} onViewResult={handleViewResult} />;
+    if (phase === "loading") return <OnboardingPage />;
+    return <GameEndPage loading={false} onViewResult={handleViewResult} />;
   }
 
   const activeCard = cards[activeIndex];

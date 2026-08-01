@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useRoomSocket } from "@hooks/useRoomSocket";
 import PersonalAnswerGamePage from "./PersonalAnswerGamePage";
@@ -8,17 +8,18 @@ import AnswerResultPage from "@pages/results/AnswerResultPage";
 import ChoiceResultPage from "@pages/results/ChoiceResultPage";
 import VoteResultPage from "@pages/results/VoteResultPage";
 import LeaveGameModal from "./LeaveGameModal";
+import OnboardingPage from "@pages/onboardings/OnboardingPage";
 
 const Q_TYPE = {
   BLANK: "BLANK",
-  INDIVIDUAL_OX: "INDIVIDUAL_OX",
+  INDIVIDUAL_CHOICE: "INDIVIDUAL_CHOICE",
   COMMON_VOTE: "COMMON_VOTE",
 };
 
-// round.timeRemaining은 RoomAPI.syncStatus 응답에만 문서화돼 있고, ROUND_START 소켓 이벤트
-// payload에도 항상 포함되는지는 백엔드 스펙에 명시돼 있지 않다. 값이 없어도(undefined)
-// 타이머가 0에 멈춰 보이지 않도록 기본 라운드 시간(mock 데이터와 동일한 60초)으로 대체한다.
+// ROUND_START 소켓 이벤트는 timeLimit, RoomAPI.syncStatus 응답은 timeRemaining으로 남은 시간을 준다.
+// 값이 없어도(undefined) 타이머가 0에 멈춰 보이지 않도록 기본 라운드 시간(mock 데이터와 동일한 60초)으로 대체한다.
 const DEFAULT_ROUND_DURATION = 60;
+const ROUND_TRANSITION_DURATION = 3000;
 
 // 개발 환경에서 목 데이터로 대체 중일 때 화면 우측 상단에 띄우는 표시.
 const MockModeBadge = () => (
@@ -34,14 +35,25 @@ const GameRoundPage = () => {
 
   const participantId = Number(sessionStorage.getItem("participantId"));
   const roomName = sessionStorage.getItem("roomName") ?? "";
+  const hostName = sessionStorage.getItem("hostName") ?? "";
+  const forceMock = sessionStorage.getItem("gameMode") === "mock";
+  const mockParticipants = useMemo(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("mockParticipants") ?? "null");
+    } catch {
+      return null;
+    }
+  }, []);
 
   const { participants, round, roundResult, voteUpdate, gameEnded, kicked, mockMode, actions } =
-    useRoomSocket({ roomCode, participantId });
+    useRoomSocket({ roomCode, participantId, forceMock, mockHostName: hostName, mockParticipants });
 
   const [timeLeft, setTimeLeft] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [lastAnswer, setLastAnswer] = useState(null);
   const [leaveModalOpen, setLeaveModalOpen] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+  const transitionTimerRef = useRef(null);
 
   // 대기방과 동일하게 참가자 목록에서 내 role을 찾아 방장 여부를 판단한다 (myRole 전용 필드는 따로 없음).
   const isHost = participants.find((p) => p.participantId === participantId)?.role === "HOST";
@@ -52,7 +64,7 @@ const GameRoundPage = () => {
   const [syncedRoundId, setSyncedRoundId] = useState(null);
   if (round && round.roundId !== syncedRoundId) {
     setSyncedRoundId(round.roundId);
-    setTimeLeft(round.timeRemaining ?? DEFAULT_ROUND_DURATION);
+    setTimeLeft(round.timeLimit ?? round.timeRemaining ?? DEFAULT_ROUND_DURATION);
     setSubmitted(Boolean(round.myAnswerSubmitted));
     setLastAnswer(null);
   }
@@ -74,8 +86,20 @@ const GameRoundPage = () => {
   }, [kicked, navigate]);
 
   useEffect(() => {
-    if (gameEnded) navigate(`/rooms/${roomCode}/result`);
-  }, [gameEnded, roomCode, navigate]);
+    if (gameEnded && !transitioning) navigate(`/rooms/${roomCode}/result`);
+  }, [gameEnded, roomCode, navigate, transitioning]);
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(transitionTimerRef.current);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!round || roundResult || timeLeft !== 0) return;
+    actions.finishRound();
+  }, [actions, round, roundResult, timeLeft]);
 
   if (!round) return null;
 
@@ -87,7 +111,14 @@ const GameRoundPage = () => {
     actions.submitAnswer({ roundId: round.roundId, ...answer });
   };
 
-  const handleNext = () => actions.voteNext(round.roundId);
+  const handleNext = () => {
+    setTransitioning(true);
+    actions.voteNext(round.roundId);
+    window.clearTimeout(transitionTimerRef.current);
+    transitionTimerRef.current = window.setTimeout(() => {
+      setTransitioning(false);
+    }, ROUND_TRANSITION_DURATION);
+  };
 
   const isShowingResult = roundResult?.roundId === round.roundId;
 
@@ -105,34 +136,34 @@ const GameRoundPage = () => {
         onLeave={onLeave}
       />
     );
-  } else if (isShowingResult && round.qType === Q_TYPE.INDIVIDUAL_OX) {
+  } else if (isShowingResult && round.qType === Q_TYPE.INDIVIDUAL_CHOICE) {
     content = (
       <ChoiceResultPage
         roomName={roomName}
         targetName={target?.name}
         question={round.question}
-        options={round.options ?? ["O", "X"]}
-        counts={roundResult.result?.optionCounts ?? {}}
-        trueAnswer={roundResult.result?.trueAnswer}
-        myAnswer={lastAnswer}
+        optionResults={roundResult.result?.optionResults ?? []}
+        targetAnswerOptionId={roundResult.result?.targetAnswerOptionId}
+        mostSelectedOptionIds={roundResult.result?.mostSelectedOptionIds ?? []}
+        mySelectedOptionId={lastAnswer}
         voteUpdate={voteUpdate}
         onNext={handleNext}
         onLeave={onLeave}
       />
     );
   } else if (isShowingResult) {
-    const ranking = (
-      roundResult.result?.ranking ??
-      participants.map((p) => ({ participantId: p.participantId, name: p.name, votes: 0 }))
+    const votes = (
+      roundResult.result?.votes ??
+      participants.map((p) => ({ participantId: p.participantId, participantName: p.name, count: 0 }))
     )
       .slice()
-      .sort((a, b) => b.votes - a.votes);
+      .sort((a, b) => b.count - a.count);
 
     content = (
       <VoteResultPage
         roomName={roomName}
         question={round.question}
-        ranking={ranking}
+        votes={votes}
         voteUpdate={voteUpdate}
         onNext={handleNext}
         onLeave={onLeave}
@@ -150,14 +181,14 @@ const GameRoundPage = () => {
           onSubmit={(textAnswer) => handleSubmit({ textAnswer })}
         />
       );
-    } else if (round.qType === Q_TYPE.INDIVIDUAL_OX) {
+    } else if (round.qType === Q_TYPE.INDIVIDUAL_CHOICE) {
       content = (
         <PersonalChoiceGamePage
           {...commonProps}
           targetName={target?.name}
           question={round.question}
-          options={round.options ?? ["O", "X"]}
-          onSubmit={(choiceAnswer) => handleSubmit({ choiceAnswer })}
+          options={round.options ?? []}
+          onSubmit={(selectedOptionId) => handleSubmit({ selectedOptionId })}
         />
       );
     } else {
@@ -171,6 +202,8 @@ const GameRoundPage = () => {
       );
     }
   }
+
+  if (transitioning) return <OnboardingPage />;
 
   return (
     <>

@@ -56,23 +56,23 @@ export const RoomSocket = {
    * 5.2 답변 제출
    * 모든 질문 유형이 같은 주소를 쓰되, qType에 맞는 필드 하나만 채워 보낸다. roundId는 항상 필수.
    * - BLANK: textAnswer
-   * - INDIVIDUAL_OX: choiceAnswer ("O" | "X")
+   * - INDIVIDUAL_CHOICE: selectedOptionId (대상자 포함 전원이 같은 선택지 목록에서 제출, 대상자의 선택이 정답이 된다)
    * - COMMON_VOTE: pickedParticipantId
    * 제출 후에는 서버가 ROUND_RESULT를 방송할 때까지 기다리고, 중복 제출 방지를 위해
    * 버튼을 비활성화하는 정도만 프론트에서 처리한다 (서버가 중복 요청을 한 건만 인정).
    * @param {String} roomCode
-   * @param {{roundId: Number, textAnswer?: String, choiceAnswer?: String, pickedParticipantId?: Number}} answer
+   * @param {{roundId: Number, textAnswer?: String, selectedOptionId?: Number, pickedParticipantId?: Number}} answer
    * @example
    * // qType별 호출 예시 (round는 ROUND_START로 받은 현재 라운드 정보)
    * actions.submitAnswer({ roundId: round.roundId, textAnswer: "맛집 탐방" });        // BLANK
-   * actions.submitAnswer({ roundId: round.roundId, choiceAnswer: "O" });               // INDIVIDUAL_OX
+   * actions.submitAnswer({ roundId: round.roundId, selectedOptionId: 13 });            // INDIVIDUAL_CHOICE
    * actions.submitAnswer({ roundId: round.roundId, pickedParticipantId: 2 });          // COMMON_VOTE
    */
-  submitAnswer: (roomCode, { roundId, textAnswer, choiceAnswer, pickedParticipantId }) => {
+  submitAnswer: (roomCode, { roundId, textAnswer, selectedOptionId, pickedParticipantId }) => {
     const payload = { roundId };
 
     if (textAnswer !== undefined) payload.textAnswer = textAnswer;
-    if (choiceAnswer !== undefined) payload.choiceAnswer = choiceAnswer;
+    if (selectedOptionId !== undefined) payload.selectedOptionId = selectedOptionId;
     if (pickedParticipantId !== undefined) payload.pickedParticipantId = pickedParticipantId;
 
     socketClient.publish(`/app/rooms/${roomCode}/answer`, payload);
