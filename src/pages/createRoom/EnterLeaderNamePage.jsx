@@ -5,7 +5,7 @@ import createRoomGraphic from "@assets/Room/CreateRoom1.svg";
 import Button from "@components/Button";
 import TextField from "@components/TextField";
 
-const CreateRoomNamePage = () => {
+const EnterLeaderNamePage = () => {
   const [name, setName] = useState("");
 
   const navigate = useNavigate();
@@ -72,4 +72,4 @@ const CreateRoomNamePage = () => {
   );
 };
 
-export default CreateRoomNamePage;
+export default EnterLeaderNamePage;
