@@ -5,12 +5,11 @@ import HomePage from "@pages/HomePage";
 import StartPage from "@pages/StartPage";
 import EnterLeaderNamePage from "@pages/createRoom/EnterLeaderNamePage";
 import CreateRoomTitlePage from "@pages/createRoom/CreateRoomTitlePage";
-import GameResultPage from "@pages/results/GameResultPage";
-import CountdownPage from "@pages/games/CountdownPage";
-import TestPage from "@pages/TestPage";
-import TestCasePage from "@pages/TestCasePage";
-import ApiConnectionTestPage from "@pages/ApiConnectionTestPage";
-import OnboardingPage from "@pages/onboardings/OnboardingPage";
+import LeaderWaitingPage from "@pages/createRoom/LeaderWaitingPage";
+import EnterRoomCodePage from "@pages/joinRoom/EnterRoomCodePage";
+import ScanRoomQrPage from "@pages/joinRoom/ScanRoomQrPage";
+import EnterMemberNamePage from "@pages/joinRoom/EnterMemberNamePage";
+import MemberWaitingPage from "@pages/joinRoom/MemberWaitingPage";
 
 const App = () => {
   return (
@@ -20,14 +19,11 @@ const App = () => {
         <Route path="/start" element={<StartPage />} />
         <Route path="/enter-leader-name" element={<EnterLeaderNamePage />} />
         <Route path="/create-room-title" element={<CreateRoomTitlePage />} />
-        <Route path="/rooms/:roomCode/result" element={<GameResultPage />} />
-        <Route path="/countdown" element={<CountdownPage onComplete={() => {}} />} />
-        <Route element={<Layout />}>
-          <Route path="/test" element={<TestPage />} />
-          <Route path="/test/case/:caseId" element={<TestCasePage />} />
-          <Route path="/test/api" element={<ApiConnectionTestPage />} />
-        </Route>
-        <Route path="/onboarding" element={<OnboardingPage />} />
+        <Route path="/leader-waiting" element={<LeaderWaitingPage />} />
+        <Route path="/enter-room-code" element={<EnterRoomCodePage />} />
+        <Route path="/scan-room-qr" element={<ScanRoomQrPage />} />
+        <Route path="/enter-member-name" element={<EnterMemberNamePage />} />
+        <Route path="/member-waiting" element={<MemberWaitingPage />} />
       </Routes>
     </BrowserRouter>
   );

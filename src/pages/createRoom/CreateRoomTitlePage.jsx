@@ -26,8 +26,7 @@ const CreateRoomTitlePage = () => {
 
   const handleInvite = () => {
     setIsModalOpen(false);
-
-    // 이후 공유하기 또는 대기방으로 이동
+    navigate("/leader-waiting");
   };
 
   const handlePrevious = () => {

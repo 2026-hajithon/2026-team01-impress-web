@@ -31,7 +31,6 @@ function Button({
         "focus-visible:outline-main-blue",
         "disabled:cursor-not-allowed",
         "disabled:bg-gray-950",
-        "disabled:text-gray-200",
         fullWidth ? "w-full" : "",
         buttonVariants[variant],
         className,
