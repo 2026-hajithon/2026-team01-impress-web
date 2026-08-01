@@ -46,7 +46,7 @@ const HostWaitingRoomPage = () => {
   useEffect(() => {
     if (!kicked) return;
     clearRoomSession();
-    navigate("/start", { replace: true });
+    navigate("/", { replace: true });
   }, [kicked, navigate]);
 
   // "게임 시작하기" 클릭 자체가 아니라, 서버가 실제로 ROUND_START를 방송한 뒤에만 다음 화면으로 넘어간다.
@@ -80,7 +80,7 @@ const HostWaitingRoomPage = () => {
     } finally {
       socketClient.disconnect();
       clearRoomSession();
-      navigate("/start", { replace: true });
+      navigate("/", { replace: true });
     }
   };
 
@@ -98,7 +98,7 @@ const HostWaitingRoomPage = () => {
   };
 
   const handleStartGame = () => {
-    if (!isHost) return;
+    if (!isHost || participants.length <= 1) return;
     actions.start();
   };
 
@@ -238,6 +238,7 @@ const HostWaitingRoomPage = () => {
               <Button
                 variant="primary"
                 onClick={handleStartGame}
+                disabled={participants.length <= 1}
               >
                 게임 시작하기
               </Button>

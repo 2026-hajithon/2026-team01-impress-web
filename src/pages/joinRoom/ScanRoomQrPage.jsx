@@ -191,7 +191,7 @@ const ScanRoomQrPage = () => {
         <div className="mt-auto px-5 pb-8 pt-3">
           <Button
             variant="neutral"
-            onClick={() => navigate("/start")}
+            onClick={() => navigate("/")}
             className="text-gray-200"
           >
             홈화면으로 돌아가기

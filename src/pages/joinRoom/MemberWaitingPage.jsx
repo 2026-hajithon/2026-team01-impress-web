@@ -59,7 +59,7 @@ const MemberWaitingPage = () => {
     sessionStorage.removeItem("participantId");
     sessionStorage.removeItem("role");
 
-    navigate("/start", { replace: true });
+    navigate("/", { replace: true });
   }, [kicked, navigate]);
 
   const handleLeaveRoom = async () => {
@@ -78,7 +78,7 @@ const MemberWaitingPage = () => {
       sessionStorage.removeItem("participantName");
       sessionStorage.removeItem("participantRole");
 
-      navigate("/start");
+      navigate("/");
     } catch (error) {
       const apiError = error.response?.data?.error;
 
