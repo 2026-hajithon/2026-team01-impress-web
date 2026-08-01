@@ -30,7 +30,7 @@ function Button({
         "active:scale-[0.99]",
         "focus-visible:outline-main-blue",
         "disabled:cursor-not-allowed",
-        "disabled:bg-gray-950",
+        "disabled:bg-none disabled:bg-gray-950 disabled:text-gray-700",
         fullWidth ? "w-full" : "",
         buttonVariants[variant],
         className,

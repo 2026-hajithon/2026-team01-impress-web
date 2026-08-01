@@ -85,9 +85,16 @@ const FrontendTestApp = () => {
   );
 
   return (
-    <FrontendTestContext.Provider value={value}>
-      <FrontendTestRouter />
-    </FrontendTestContext.Provider>
+    <div className="min-h-dvh bg-[#e4e6ea]">
+      <div
+        className="relative mx-auto min-h-dvh w-full max-w-107.5 overflow-x-hidden bg-black shadow-[0_0_36px_rgba(15,17,22,0.16)]"
+        data-testid="frontend-test-shell"
+      >
+        <FrontendTestContext.Provider value={value}>
+          <FrontendTestRouter />
+        </FrontendTestContext.Provider>
+      </div>
+    </div>
   );
 };
 

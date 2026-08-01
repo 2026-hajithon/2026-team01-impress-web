@@ -32,7 +32,7 @@ const CountdownPage = ({ onComplete }) => {
   const step = STEPS[stepIndex];
 
   return (
-    <div className="relative flex min-h-dvh flex-col items-center justify-center">
+    <div className="relative isolate flex h-dvh min-h-dvh flex-col items-center justify-center overflow-hidden bg-black">
       <GameBackground />
       {step.key === "start" ? (
         <img src={GameStartIcon} className="h-[190px] w-[260px]" alt="Game Start" />

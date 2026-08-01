@@ -13,22 +13,27 @@ const Round = ({ round, session, onSaveAnswer, onCompleteRound, onLeave }) => {
   const [timeLeft, setTimeLeft] = useState(session.roundDuration);
   const [submitted, setSubmitted] = useState(false);
   const [phase, setPhase] = useState("answering");
-  const [result, setResult] = useState(null);
+  const [submittedAnswer, setSubmittedAnswer] = useState(undefined);
+  const requiredVoteCount = Math.floor(session.participants.length / 2) + 1;
+  const delayedVoteCount = Math.min(round.roundId % 2 === 0 ? 2 : 1, requiredVoteCount - 1);
+  const [voteUpdate, setVoteUpdate] = useState(() => ({
+    votedCount: Math.max(0, requiredVoteCount - delayedVoteCount - 1),
+    requiredCount: requiredVoteCount,
+  }));
+  const [votedForNextRound, setVotedForNextRound] = useState(false);
 
   const finishAnswering = useCallback((answer) => {
     if (phase !== "answering") return;
-    const nextResult = createIntermediateResult(round, session.participants, answer);
-
     console.info("[Frontend Test] round completed", {
       roundId: round.roundId,
       qType: round.qType,
       answer,
     });
     setSubmitted(true);
+    setSubmittedAnswer(answer);
     onSaveAnswer(round.roundId, answer);
-    setResult(nextResult);
     window.setTimeout(() => setPhase("result"), 500);
-  }, [onSaveAnswer, phase, round, session.participants]);
+  }, [onSaveAnswer, phase, round]);
 
   useEffect(() => {
     if (phase !== "answering") return undefined;
@@ -39,16 +44,47 @@ const Round = ({ round, session, onSaveAnswer, onCompleteRound, onLeave }) => {
     return () => window.clearTimeout(timer);
   }, [finishAnswering, phase, timeLeft]);
 
+  useEffect(() => {
+    if (!votedForNextRound || voteUpdate.votedCount >= voteUpdate.requiredCount) {
+      return undefined;
+    }
+
+    const nextVoteTimer = window.setTimeout(() => {
+      setVoteUpdate((previous) => ({
+        ...previous,
+        votedCount: Math.min(previous.votedCount + 1, previous.requiredCount),
+      }));
+    }, 850);
+
+    return () => window.clearTimeout(nextVoteTimer);
+  }, [voteUpdate, votedForNextRound]);
+
+  useEffect(() => {
+    if (!votedForNextRound || voteUpdate.votedCount < voteUpdate.requiredCount) {
+      return undefined;
+    }
+
+    const completeTimer = window.setTimeout(onCompleteRound, 650);
+    return () => window.clearTimeout(completeTimer);
+  }, [onCompleteRound, voteUpdate, votedForNextRound]);
+
+  const handleVoteNextRound = useCallback(() => {
+    if (votedForNextRound) return;
+
+    setVotedForNextRound(true);
+    setVoteUpdate((previous) => ({
+      ...previous,
+      votedCount: Math.min(previous.votedCount + 1, previous.requiredCount),
+    }));
+  }, [votedForNextRound]);
+
   if (phase === "result") {
-    const fallbackResult = createIntermediateResult(round, session.participants, null);
+    const result = createIntermediateResult(round, session.participants, submittedAnswer);
     const resultProps = {
       roomName: session.roomName,
       question: round.question,
-      voteUpdate: {
-        votedCount: Math.floor(session.participants.length / 2) + 1,
-        requiredCount: Math.floor(session.participants.length / 2) + 1,
-      },
-      onNext: onCompleteRound,
+      voteUpdate,
+      onNext: handleVoteNextRound,
       onLeave,
     };
 
@@ -57,7 +93,7 @@ const Round = ({ round, session, onSaveAnswer, onCompleteRound, onLeave }) => {
         <AnswerResultPage
           {...resultProps}
           targetName={round.targetName}
-          answers={result?.answers ?? fallbackResult.answers}
+          answers={result.answers}
         />
       );
     }
@@ -67,15 +103,15 @@ const Round = ({ round, session, onSaveAnswer, onCompleteRound, onLeave }) => {
         <ChoiceResultPage
           {...resultProps}
           targetName={round.targetName}
-          options={result?.options ?? fallbackResult.options}
-          counts={result?.counts ?? fallbackResult.counts}
-          trueAnswer={result?.trueAnswer ?? fallbackResult.trueAnswer}
-          myAnswer={result?.myAnswer ?? fallbackResult.myAnswer}
+          optionResults={result.optionResults}
+          targetAnswerOptionId={result.targetAnswerOptionId}
+          mostSelectedOptionIds={result.mostSelectedOptionIds}
+          mySelectedOptionId={result.mySelectedOptionId}
         />
       );
     }
 
-    return <VoteResultPage {...resultProps} ranking={result?.ranking ?? fallbackResult.ranking} />;
+    return <VoteResultPage {...resultProps} votes={result.votes} />;
   }
 
   const commonProps = {

@@ -76,21 +76,28 @@ export const createIntermediateResult = (round, participants, answer) => {
   }
 
   if (round.qType === "INDIVIDUAL_OX") {
-    const optionNames = round.options.map((option) => option.content);
+    const optionResults = round.options.map((option, index) => ({
+      ...option,
+      count: index === 0 ? Math.max(1, participants.length - 1) : index === 1 ? 1 : 0,
+    }));
+
     return {
-      options: optionNames,
-      counts: Object.fromEntries(optionNames.map((option, index) => [option, index === 0 ? participants.length - 1 : 0])),
-      trueAnswer: optionNames[0],
-      myAnswer: answer,
+      optionResults,
+      targetAnswerOptionId: round.options[0].optionId,
+      mostSelectedOptionIds: [round.options[0].optionId],
+      mySelectedOptionId: answer ?? undefined,
     };
   }
 
   return {
-    ranking: participants.map((participant, index) => ({
+    votes: participants.map((participant, index) => ({
       participantId: participant.participantId,
-      name: participant.name,
-      votes: participant.participantId === answer ? participants.length : Math.max(0, participants.length - index - 2),
-    })).sort((a, b) => b.votes - a.votes),
+      participantName: participant.name,
+      count:
+        participant.participantId === answer
+          ? participants.length
+          : Math.max(0, participants.length - index - 2),
+    })).sort((a, b) => b.count - a.count),
   };
 };
 
@@ -131,6 +138,7 @@ export const createFinalResult = (session, answers) => ({
       result: {
         votes: session.participants.map((participant, index) => ({
           participantId: participant.participantId,
+          participantName: participant.name,
           count: participant.participantId === answer ? session.participants.length : Math.max(0, 2 - index),
         })),
       },

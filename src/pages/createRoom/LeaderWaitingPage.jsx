@@ -27,8 +27,13 @@ const HostWaitingRoomPage = () => {
   const roomName = sessionStorage.getItem("roomName") || "하지톤 1팀";
   const roomCode = routeRoomCode || sessionStorage.getItem("roomCode") || "0801";
   const participantId = Number(sessionStorage.getItem("participantId"));
+  const hostName = sessionStorage.getItem("hostName") || "방장";
 
-  const { participants, round, kicked, actions } = useRoomSocket({ roomCode, participantId });
+  const { participants, round, kicked, actions } = useRoomSocket({
+    roomCode,
+    participantId,
+    mockHostName: hostName,
+  });
 
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
@@ -206,17 +211,11 @@ const HostWaitingRoomPage = () => {
 
         {/* 하단 버튼 */}
         <footer className="shrink-0 bg-black px-5 pb-8 pt-3">
-          <div
-            className={[
-              "mx-auto grid w-full justify-center gap-2.5",
-              "grid-cols-[auto_minmax(0,204px)]",
-            ].join(" ")}
-          >
+          <div className="grid w-full grid-cols-[120px_minmax(0,1fr)] gap-2.5">
             <Button
               variant="secondary"
-              fullWidth={false}
               onClick={handleLeave}
-              className="gap-1 pl-4 pr-5"
+              className="gap-1"
             >
               <img
                 src={leaveRoomIcon}

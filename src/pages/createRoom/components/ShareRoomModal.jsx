@@ -12,7 +12,16 @@ const ShareRoomModal = ({
 }) => {
   if (!isOpen) return null;
 
-  const qrValue = roomCode || "0000";
+  const displayCode = roomCode || "0000";
+  // QR을 폰 기본 카메라로 찍었을 때 바로 입장 화면으로 연결되도록 방 코드가 아니라 링크를 담는다.
+  // (앱 내 "QR로 입장하기" 스캐너는 이 링크에서 roomCode만 다시 추출해서 쓴다.)
+  const isLocalhost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  const localNetworkHost = import.meta.env.VITE_DEV_LAN_HOST;
+  const localNetworkOrigin = localNetworkHost
+    ? `${window.location.protocol}//${localNetworkHost}${window.location.port ? `:${window.location.port}` : ""}`
+    : window.location.origin;
+  const qrOrigin = import.meta.env.DEV && isLocalhost ? localNetworkOrigin : window.location.origin;
+  const qrValue = `${qrOrigin}/enter-member-name?roomCode=${displayCode}`;
 
   const handleCopyRoomCode = async () => {
     try {
@@ -76,7 +85,7 @@ const ShareRoomModal = ({
 
             <div className="flex items-center gap-2.5">
               <strong className="text-head2-2 text-gray-950">
-                {qrValue}
+                {displayCode}
               </strong>
 
               <button

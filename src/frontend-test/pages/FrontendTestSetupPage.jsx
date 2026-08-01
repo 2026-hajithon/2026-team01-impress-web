@@ -5,6 +5,34 @@ import TextField from "@components/TextField";
 import GameBackground from "@components/games/GameBackground";
 import { useFrontendTest } from "../FrontendTestContext";
 
+const SettingChoices = ({ label, value, options, suffix, onChange }) => (
+  <fieldset className="flex flex-col gap-2.5">
+    <legend className="mb-2.5 text-body2-2 text-gray-400">{label}</legend>
+    <div className="grid grid-cols-4 gap-2">
+      {options.map((option) => {
+        const isSelected = value === option;
+
+        return (
+          <button
+            key={option}
+            type="button"
+            onClick={() => onChange(option)}
+            className={[
+              "h-11 rounded-[14px] border text-body2-1 transition-colors",
+              isSelected
+                ? "border-main-blue bg-main-blue text-white"
+                : "border-gray-900 bg-black/70 text-gray-400",
+            ].join(" ")}
+            aria-pressed={isSelected}
+          >
+            {option}{suffix}
+          </button>
+        );
+      })}
+    </div>
+  </fieldset>
+);
+
 const FrontendTestSetupPage = () => {
   const navigate = useNavigate();
   const { startSession } = useFrontendTest();
@@ -47,30 +75,20 @@ const FrontendTestSetupPage = () => {
             모임방 이름
             <TextField value={roomName} onChange={(event) => setRoomName(event.target.value)} maxLength={20} />
           </label>
-          <label className="flex flex-col gap-2 text-body2-2 text-gray-400">
-            참가자 수
-            <select
-              value={participantCount}
-              onChange={(event) => setParticipantCount(Number(event.target.value))}
-              className="h-13 rounded-[14px] bg-black px-4 text-body1-2 text-white outline-none"
-            >
-              {[2, 3, 4, 5, 6, 7, 8].map((count) => (
-                <option key={count} value={count}>{count}명</option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-2 text-body2-2 text-gray-400">
-            문제당 제한시간
-            <select
-              value={roundDuration}
-              onChange={(event) => setRoundDuration(Number(event.target.value))}
-              className="h-13 rounded-[14px] bg-black px-4 text-body1-2 text-white outline-none"
-            >
-              {[5, 15, 30, 60].map((seconds) => (
-                <option key={seconds} value={seconds}>{seconds}초</option>
-              ))}
-            </select>
-          </label>
+          <SettingChoices
+            label="참가자 수"
+            value={participantCount}
+            options={[2, 3, 4, 5, 6, 7, 8]}
+            suffix="명"
+            onChange={setParticipantCount}
+          />
+          <SettingChoices
+            label="문제당 제한시간"
+            value={roundDuration}
+            options={[5, 15, 30, 60]}
+            suffix="초"
+            onChange={setRoundDuration}
+          />
         </div>
 
         <div className="mt-auto">
