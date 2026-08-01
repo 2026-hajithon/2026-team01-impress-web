@@ -2,13 +2,14 @@ import { useRoomSocket } from "@hooks/useRoomSocket";
 
 import { RoomAPI } from "@apis/RoomAPI";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import LeaveRoom from "@assets/Room/LeaveRoom.svg";
 import RoomLeader from "@assets/Room/RoomLeader.svg";
 import Share from "@assets/Room/Share.svg";
 import Button from "@components/Button";
+import ConnectionStatusBanner from "@components/ConnectionStatusBanner";
 import ShareRoomModal from "@pages/createRoom/components/ShareRoomModal";
 
 const MemberWaitingPage = () => {
@@ -38,10 +39,28 @@ const MemberWaitingPage = () => {
       ? Number(storedParticipantId)
       : null);
       
-  const { participants } = useRoomSocket({
+  const { status, participants, round, kicked } = useRoomSocket({
     roomCode,
     participantId,
   });
+
+  // 방장이 "게임 시작하기"를 눌러 서버가 실제로 ROUND_START를 방송한 뒤에만 다음 화면으로 넘어간다
+  // (HostWaitingRoomPage와 동일한 규칙 — 5.1 참고).
+  useEffect(() => {
+    if (round) navigate(`/rooms/${roomCode}/countdown`);
+  }, [round, roomCode, navigate]);
+
+  // 강퇴당하면(4.3) 홈으로 돌려보낸다.
+  useEffect(() => {
+    if (!kicked) return;
+
+    sessionStorage.removeItem("roomCode");
+    sessionStorage.removeItem("roomName");
+    sessionStorage.removeItem("participantId");
+    sessionStorage.removeItem("role");
+
+    navigate("/start", { replace: true });
+  }, [kicked, navigate]);
 
   const handleLeaveRoom = async () => {
     if (!roomCode || !participantId || isLeaving) return;
@@ -86,6 +105,8 @@ const MemberWaitingPage = () => {
             {roomName}
           </h1>
         </header>
+
+        <ConnectionStatusBanner status={status} />
 
         <div className="shrink-0 px-5 py-5">
           <button

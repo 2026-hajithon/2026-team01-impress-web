@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useRoomSocket } from "@hooks/useRoomSocket";
 import PersonalAnswerGamePage from "./PersonalAnswerGamePage";
@@ -60,6 +60,7 @@ const GameRoundPage = () => {
   const [leaveModalOpen, setLeaveModalOpen] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
   const transitionTimerRef = useRef(null);
+  const previousRoundIdRef = useRef(null);
 
   // 대기방과 동일하게 참가자 목록에서 내 role을 찾아 방장 여부를 판단한다 (myRole 전용 필드는 따로 없음).
   const isHost = participants.find((p) => p.participantId === participantId)?.role === "HOST";
@@ -93,9 +94,33 @@ const GameRoundPage = () => {
     if (kicked) navigate("/");
   }, [kicked, navigate]);
 
+  // 과반수 도달 후 서버가 모두에게 ROUND_START를 방송했을 때만 다음 라운드 로딩을 시작한다.
+  // useLayoutEffect로 새 문제 화면이 한 프레임 먼저 보이는 현상도 막는다.
+  useLayoutEffect(() => {
+    const currentRoundId = round?.roundId ?? null;
+    const previousRoundId = previousRoundIdRef.current;
+    previousRoundIdRef.current = currentRoundId;
+
+    if (previousRoundId === null || currentRoundId === null || previousRoundId === currentRoundId) {
+      return;
+    }
+
+    setTransitioning(true);
+    window.clearTimeout(transitionTimerRef.current);
+    transitionTimerRef.current = window.setTimeout(() => {
+      setTransitioning(false);
+    }, ROUND_TRANSITION_DURATION);
+  }, [round?.roundId]);
+
   useEffect(() => {
-    if (gameEnded && !transitioning) navigate(`/rooms/${roomCode}/result`);
-  }, [gameEnded, roomCode, navigate, transitioning]);
+    if (!gameEnded) return undefined;
+
+    const resultTimer = window.setTimeout(() => {
+      navigate(`/rooms/${roomCode}/result`);
+    }, ROUND_TRANSITION_DURATION);
+
+    return () => window.clearTimeout(resultTimer);
+  }, [gameEnded, roomCode, navigate]);
 
   useEffect(
     () => () => {
@@ -112,20 +137,18 @@ const GameRoundPage = () => {
   if (!round) return null;
 
   const target = participants.find((p) => p.participantId === round.targetId);
+  const isPersonalQuestion = round.qType !== Q_TYPE.COMMON_VOTE;
+  const isQuestionTarget = isPersonalQuestion && Number(round.targetId) === participantId;
 
   const handleSubmit = (answer) => {
+    if (isQuestionTarget) return;
     setSubmitted(true);
     setLastAnswer(Object.values(answer)[0]);
     actions.submitAnswer({ roundId: round.roundId, ...answer });
   };
 
   const handleNext = () => {
-    setTransitioning(true);
     actions.voteNext(round.roundId);
-    window.clearTimeout(transitionTimerRef.current);
-    transitionTimerRef.current = window.setTimeout(() => {
-      setTransitioning(false);
-    }, ROUND_TRANSITION_DURATION);
   };
 
   const isShowingResult = roundResult?.roundId === round.roundId;
@@ -186,6 +209,7 @@ const GameRoundPage = () => {
           {...commonProps}
           targetName={target?.name}
           question={round.question}
+          isQuestionTarget={isQuestionTarget}
           onSubmit={(textAnswer) => handleSubmit({ textAnswer })}
         />
       );
@@ -196,6 +220,7 @@ const GameRoundPage = () => {
           targetName={target?.name}
           question={round.question}
           options={round.options ?? []}
+          isQuestionTarget={isQuestionTarget}
           onSubmit={(selectedOptionId) => handleSubmit({ selectedOptionId })}
         />
       );
@@ -211,7 +236,7 @@ const GameRoundPage = () => {
     }
   }
 
-  if (transitioning) return <OnboardingPage />;
+  if (transitioning || gameEnded) return <OnboardingPage />;
 
   return (
     <>

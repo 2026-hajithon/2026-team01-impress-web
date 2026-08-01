@@ -32,14 +32,20 @@ const EnterMemberNamePage = () => {
         trimmedName,
       );
 
-      sessionStorage.setItem("hostName", trimmedName);
+      const roomName = location.state?.roomName ?? "";
+      const hostName = location.state?.hostName ?? "";
+
       sessionStorage.setItem("roomCode", roomCode);
+      sessionStorage.setItem("roomName", roomName);
       sessionStorage.setItem("participantId", String(participantId));
       sessionStorage.setItem("role", role);
       sessionStorage.removeItem("gameMode");
       sessionStorage.removeItem("mockParticipants");
 
-      navigate(`/rooms/${roomCode}/waiting`);
+      // 방장과 다른 화면(MemberWaitingPage)으로 보낸다 — "게임 시작"/"강퇴"는 방장 전용 화면에만 있어야 한다.
+      navigate("/member-waiting", {
+        state: { roomCode, roomName, hostName, memberName: trimmedName, participantId },
+      });
     } catch (error) {
       console.error(
         "%c[REST ✕] 방 참여 실패",

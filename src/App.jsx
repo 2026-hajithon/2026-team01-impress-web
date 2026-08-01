@@ -19,6 +19,12 @@ import OnboardingPage from "@pages/onboardings/OnboardingPage";
 import TestPage from "@pages/TestPage";
 import TestCasePage from "@pages/TestCasePage";
 import ApiConnectionTestPage from "@pages/ApiConnectionTestPage";
+import { isHostRole } from "@utils/participantRoles";
+
+const WaitingRoomRoute = () => {
+  const role = sessionStorage.getItem("role");
+  return isHostRole(role) ? <LeaderWaitingPage /> : <MemberWaitingPage />;
+};
 
 const App = () => {
   return (
@@ -28,8 +34,8 @@ const App = () => {
         <Route path="/start" element={<StartPage />} />
         <Route path="/enter-leader-name" element={<EnterLeaderNamePage />} />
         <Route path="/create-room-title" element={<CreateRoomTitlePage />} />
-        <Route path="/leader-waiting" element={<LeaderWaitingPage />} />
-        <Route path="/rooms/:roomCode/waiting" element={<LeaderWaitingPage />} />
+        <Route path="/leader-waiting" element={<WaitingRoomRoute />} />
+        <Route path="/rooms/:roomCode/waiting" element={<WaitingRoomRoute />} />
         <Route path="/rooms/:roomCode/countdown" element={<GameCountdownRoute />} />
         <Route path="/rooms/:roomCode/loading" element={<GameLoadingPage />} />
         <Route path="/rooms/:roomCode/round" element={<GameRoundPage />} />

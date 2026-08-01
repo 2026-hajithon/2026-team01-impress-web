@@ -1,4 +1,4 @@
-import { Client } from "@stomp/stompjs";
+import { Client, ReconnectionTimeMode } from "@stomp/stompjs";
 import { SOCKET_STATUS } from "../utils/eventTypes";
 
 const REST_URL = import.meta.env.VITE_PUBLIC_URL ?? "";
@@ -14,6 +14,7 @@ class SocketClient {
 
   roomCode = null;
   participantId = null;
+  connectionVersion = 0;
 
   eventListeners = new Set();
   errorListeners = new Set();
@@ -30,26 +31,46 @@ class SocketClient {
    * await socketClient.connect({ roomCode: "1234", participantId: 1 });
    */
   async connect({ roomCode, participantId }) {
+    const normalizedParticipantId = Number(participantId);
+
+    if (!roomCode || !Number.isInteger(normalizedParticipantId) || normalizedParticipantId <= 0) {
+      await this.disconnect();
+      console.error("[WS ✕] 유효한 roomCode와 양의 정수 participantId가 필요합니다.", {
+        roomCode,
+        participantId,
+      });
+      this.setStatus(SOCKET_STATUS.ERROR);
+      return;
+    }
+
     // 같은 방에 이미 연결 중이면 중복 연결 방지
     if (
       this.client?.active &&
       this.roomCode === roomCode &&
-      this.participantId === participantId
+      this.participantId === normalizedParticipantId
     ) {
       return;
     }
 
-    await this.disconnect();
+    const connectionVersion = ++this.connectionVersion;
+    await this.deactivateCurrentClient();
+
+    // React StrictMode의 mount → cleanup → mount 사이에서 오래된 connect가 뒤늦게
+    // 재개되더라도 새 연결을 덮어쓰지 못하게 한다.
+    if (connectionVersion !== this.connectionVersion) return;
 
     this.roomCode = roomCode;
-    this.participantId = participantId;
+    this.participantId = normalizedParticipantId;
 
     this.setStatus(SOCKET_STATUS.CONNECTING);
 
+    let reconnectAllowed = true;
     const client = new Client({
       brokerURL: BROKER_URL,
 
-      reconnectDelay: 3000,
+      reconnectDelay: 2000,
+      reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
+      maxReconnectDelay: 30000,
 
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
@@ -63,12 +84,13 @@ class SocketClient {
     // 서버는 STOMP CONNECT Header의 Participant-Id로 참가자를 식별한다 (4.1)
     client.beforeConnect = () => {
       client.connectHeaders = {
-        "Participant-Id": this.participantId,
+        "Participant-Id": normalizedParticipantId,
       };
     };
 
     // 최초 연결 및 재연결 성공 시 실행
     client.onConnect = () => {
+      if (this.client !== client) return;
       this.setStatus(SOCKET_STATUS.CONNECTED);
 
       this.subscribeRoom();
@@ -81,10 +103,16 @@ class SocketClient {
     };
 
     client.onWebSocketClose = () => {
+      if (this.client !== client) return;
       this.roomSubscription = null;
       this.errorSubscription = null;
 
-      if (client.active) {
+      if (!reconnectAllowed) {
+        this.client = null;
+        this.roomCode = null;
+        this.participantId = null;
+        this.setStatus(SOCKET_STATUS.ERROR);
+      } else if (client.active) {
         this.setStatus(SOCKET_STATUS.RECONNECTING);
       } else {
         this.setStatus(SOCKET_STATUS.DISCONNECTED);
@@ -92,6 +120,7 @@ class SocketClient {
     };
 
     client.onWebSocketError = () => {
+      if (this.client !== client) return;
       console.error(
         `%c[WS ✕] 연결 실패 — 서버(${BROKER_URL})에 연결할 수 없어요`,
         "color:#ff3b9b; font-weight:bold",
@@ -100,6 +129,7 @@ class SocketClient {
     };
 
     client.onStompError = (frame) => {
+      if (this.client !== client) return;
       console.error(
         `%c[WS ✕ STOMP] ${frame.headers?.message ?? "알 수 없는 오류"}`,
         "color:#ff3b9b; font-weight:bold",
@@ -112,6 +142,12 @@ class SocketClient {
       }
 
       this.setStatus(SOCKET_STATUS.ERROR);
+
+      // STOMP ERROR는 단순 네트워크 단절이 아니라 서버가 CONNECT를 거절한 상태다.
+      // 같은 잘못된 헤더로 재시도해도 성공할 수 없으므로 즉시 자동 재접속을 끝낸다.
+      reconnectAllowed = false;
+      client.reconnectDelay = 0;
+      void client.deactivate({ force: true });
     };
 
     this.client = client;
@@ -127,6 +163,15 @@ class SocketClient {
    * await socketClient.disconnect();
    */
   async disconnect() {
+    this.connectionVersion += 1;
+    await this.deactivateCurrentClient();
+
+    this.roomCode = null;
+    this.participantId = null;
+    this.setStatus(SOCKET_STATUS.DISCONNECTED);
+  }
+
+  async deactivateCurrentClient() {
     this.roomSubscription?.unsubscribe();
     this.roomSubscription = null;
 
@@ -136,14 +181,11 @@ class SocketClient {
     const client = this.client;
 
     this.client = null;
-    this.roomCode = null;
-    this.participantId = null;
 
     if (client?.active) {
-      await client.deactivate();
+      client.reconnectDelay = 0;
+      await client.deactivate({ force: true });
     }
-
-    this.setStatus(SOCKET_STATUS.DISCONNECTED);
   }
 
   // 방 전체 브로드캐스트 이벤트 구독 (3.2 공통 구독 주소)

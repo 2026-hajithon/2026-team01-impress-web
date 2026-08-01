@@ -6,9 +6,11 @@ import leaveRoomIcon from "@assets/Room/LeaveRoom.svg";
 import roomLeaderIcon from "@assets/Room/RoomLeader.svg";
 import shareIcon from "@assets/Room/Share.svg";
 import Button from "@components/Button";
+import ConnectionStatusBanner from "@components/ConnectionStatusBanner";
 import { RoomAPI } from "@apis/RoomAPI";
 import { socketClient } from "@apis/socketClient";
 import { useRoomSocket } from "@hooks/useRoomSocket";
+import { isHostRole } from "@utils/participantRoles";
 
 import KickMemberModal from "./components/KickMemberModal";
 import LeaderLeaveModal from "./components/LeaderLeaveModal";
@@ -28,8 +30,9 @@ const HostWaitingRoomPage = () => {
   const roomCode = routeRoomCode || sessionStorage.getItem("roomCode") || "0801";
   const participantId = Number(sessionStorage.getItem("participantId"));
   const hostName = sessionStorage.getItem("hostName") || "방장";
+  const isHost = isHostRole(sessionStorage.getItem("role"));
 
-  const { participants, round, kicked, actions } = useRoomSocket({
+  const { status, participants, round, kicked, actions } = useRoomSocket({
     roomCode,
     participantId,
     mockHostName: hostName,
@@ -95,6 +98,7 @@ const HostWaitingRoomPage = () => {
   };
 
   const handleStartGame = () => {
+    if (!isHost) return;
     actions.start();
   };
 
@@ -112,6 +116,8 @@ const HostWaitingRoomPage = () => {
             {roomName}
           </h1>
         </header>
+
+        <ConnectionStatusBanner status={status} />
 
         {/* 스크롤 영역 */}
         <div className="min-h-0 flex-1 overflow-y-auto">
@@ -228,12 +234,14 @@ const HostWaitingRoomPage = () => {
               </span>
             </Button>
 
-            <Button
-              variant="primary"
-              onClick={handleStartGame}
-            >
-              게임 시작하기
-            </Button>
+            {isHost && (
+              <Button
+                variant="primary"
+                onClick={handleStartGame}
+              >
+                게임 시작하기
+              </Button>
+            )}
           </div>
         </footer>
         <LeaderLeaveModal
