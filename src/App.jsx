@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
+import Layout from "./Layout";
 import HomePage from "@pages/HomePage";
 import StartPage from "@pages/StartPage";
 import EnterLeaderNamePage from "@pages/createRoom/EnterLeaderNamePage";

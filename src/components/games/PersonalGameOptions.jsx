@@ -1,8 +1,8 @@
-import PersonalOptionStar1 from "@assets/Game/PersonalOptionStar1.svg";
-import PersonalOptionStar2 from "@assets/Game/PersonalOptionStar2.svg";
-import PersonalOptionStar3 from "@assets/Game/PersonalOptionStar3.svg";
-import PersonalOptionStar4 from "@assets/Game/PersonalOptionStar4.svg";
-import PersonalOptionDot from "@assets/Game/PersonalOptionDot.svg";
+import PersonalOptionStar1 from "@assets/Game/Option/PersonalOptionStar1.svg";
+import PersonalOptionStar2 from "@assets/Game/Option/PersonalOptionStar2.svg";
+import PersonalOptionStar3 from "@assets/Game/Option/PersonalOptionStar3.svg";
+import PersonalOptionStar4 from "@assets/Game/Option/PersonalOptionStar4.svg";
+import PersonalOptionDot from "@assets/Game/Option/PersonalOptionDot.svg";
 
 // Figma "개인 - 객관식 질문" 선택된 선택지(226:1718)의 그래픽을 그대로 옮긴 값.
 // 각 별의 회전 중심(원본 컨테이너의 중심점)에 맞춰 배치했다.

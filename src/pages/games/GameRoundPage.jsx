@@ -4,15 +4,21 @@ import { useRoomSocket } from "@hooks/useRoomSocket";
 import PersonalAnswerGamePage from "./PersonalAnswerGamePage";
 import PersonalChoiceGamePage from "./PersonalChoiceGamePage";
 import GeneralChoiceGamePage from "./GeneralChoiceGamePage";
-import AnswerResultPage from "./AnswerResultPage";
-import ChoiceResultPage from "./ChoiceResultPage";
-import VoteResultPage from "./VoteResultPage";
+import AnswerResultPage from "@pages/results/AnswerResultPage";
+import ChoiceResultPage from "@pages/results/ChoiceResultPage";
+import VoteResultPage from "@pages/results/VoteResultPage";
+import LeaveGameModal from "./LeaveGameModal";
 
 const Q_TYPE = {
   BLANK: "BLANK",
   INDIVIDUAL_OX: "INDIVIDUAL_OX",
   COMMON_VOTE: "COMMON_VOTE",
 };
+
+// round.timeRemaining은 RoomAPI.syncStatus 응답에만 문서화돼 있고, ROUND_START 소켓 이벤트
+// payload에도 항상 포함되는지는 백엔드 스펙에 명시돼 있지 않다. 값이 없어도(undefined)
+// 타이머가 0에 멈춰 보이지 않도록 기본 라운드 시간(mock 데이터와 동일한 60초)으로 대체한다.
+const DEFAULT_ROUND_DURATION = 60;
 
 // 개발 환경에서 목 데이터로 대체 중일 때 화면 우측 상단에 띄우는 표시.
 const MockModeBadge = () => (
@@ -35,12 +41,18 @@ const GameRoundPage = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [lastAnswer, setLastAnswer] = useState(null);
+  const [leaveModalOpen, setLeaveModalOpen] = useState(false);
+
+  // 대기방과 동일하게 참가자 목록에서 내 role을 찾아 방장 여부를 판단한다 (myRole 전용 필드는 따로 없음).
+  const isHost = participants.find((p) => p.participantId === participantId)?.role === "HOST";
+  // 방장만 라운드 중 "나가기"를 볼 수 있다. 실제 나가기 동작(REST 호출 등)은 모달 쪽에서 확정되면 연결한다.
+  const onLeave = isHost ? () => setLeaveModalOpen(true) : undefined;
 
   // 새 라운드로 바뀌면 타이머/제출 상태를 그 라운드 값으로 리셋한다 (렌더 중 상태 조정).
   const [syncedRoundId, setSyncedRoundId] = useState(null);
   if (round && round.roundId !== syncedRoundId) {
     setSyncedRoundId(round.roundId);
-    setTimeLeft(round.timeRemaining ?? 0);
+    setTimeLeft(round.timeRemaining ?? DEFAULT_ROUND_DURATION);
     setSubmitted(Boolean(round.myAnswerSubmitted));
     setLastAnswer(null);
   }
@@ -90,6 +102,7 @@ const GameRoundPage = () => {
         answers={roundResult.result?.answers ?? []}
         voteUpdate={voteUpdate}
         onNext={handleNext}
+        onLeave={onLeave}
       />
     );
   } else if (isShowingResult && round.qType === Q_TYPE.INDIVIDUAL_OX) {
@@ -104,6 +117,7 @@ const GameRoundPage = () => {
         myAnswer={lastAnswer}
         voteUpdate={voteUpdate}
         onNext={handleNext}
+        onLeave={onLeave}
       />
     );
   } else if (isShowingResult) {
@@ -121,10 +135,11 @@ const GameRoundPage = () => {
         ranking={ranking}
         voteUpdate={voteUpdate}
         onNext={handleNext}
+        onLeave={onLeave}
       />
     );
   } else {
-    const commonProps = { roomName, timeLeft, submitted };
+    const commonProps = { roomName, timeLeft, submitted, onLeave };
 
     if (round.qType === Q_TYPE.BLANK) {
       content = (
@@ -161,6 +176,11 @@ const GameRoundPage = () => {
     <>
       {mockMode && <MockModeBadge />}
       {content}
+      <LeaveGameModal
+        isOpen={leaveModalOpen}
+        onClose={() => setLeaveModalOpen(false)}
+        onConfirm={() => setLeaveModalOpen(false)}
+      />
     </>
   );
 };

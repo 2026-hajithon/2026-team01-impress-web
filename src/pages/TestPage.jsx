@@ -1,82 +1,78 @@
-import PersonalAnswerGamePage from "./games/PersonalAnswerGamePage";
-import PersonalChoiceGamePage from "./games/PersonalChoiceGamePage";
-import GeneralChoiceGamePage from "./games/GeneralChoiceGamePage";
-import AnswerResultPage from "./games/AnswerResultPage";
-import ChoiceResultPage from "./games/ChoiceResultPage";
-import VoteResultPage from "./games/VoteResultPage";
+import { Link } from "react-router-dom";
+import { TEST_CASE_GROUPS } from "./testCaseRegistry";
 
-const MOCK_PARTICIPANTS = [
-  { participantId: 1, name: "김태현" },
-  { participantId: 2, name: "김가빈" },
-  { participantId: 3, name: "김수현" },
-  { participantId: 4, name: "이혁" },
-  { participantId: 5, name: "윤소연" },
-  { participantId: 6, name: "유영주" },
-];
+// 게임 종료 -> 결과지 화면은 실제 방(roomCode)이 있어야 라우팅되는 GameResultPage를 그대로 쓰는 게
+// 목 데이터 폴백까지 실제와 똑같이 확인할 수 있어서, 전체 플로우는 이 라우트로 보낸다.
+const TEST_ROOM_CODE = "TEST-ROOM";
 
 const TestPage = () => {
-  return (
-    <div className="flex flex-col gap-5 bg-black w-full">
-      <PersonalAnswerGamePage
-        roomName="하지톤 1팀"
-        timeLeft={60}
-        targetName="김태현"
-        question="이 사람은 주말에 ____를 할 것 같은 인상이다!"
-        submitted={false}
-        onSubmit={() => {}}
-      />
-      <PersonalChoiceGamePage
-        roomName="하지톤 1팀"
-        timeLeft={60}
-        targetName="김태현"
-        question={`이 사람의 형제관계는\n어떻게 될까?`}
-        options={["남매", "자매", "외동", "형제"]}
-        submitted={false}
-        onSubmit={() => {}}
-      />
-      <GeneralChoiceGamePage
-        roomName="하지톤 1팀"
-        timeLeft={60}
-        question={`어렸을 때, 가장 엄마 말을 안들었을 것 같은 사람은?`}
-        participants={MOCK_PARTICIPANTS}
-        submitted={false}
-        onSubmit={() => {}}
-      />
+  sessionStorage.setItem("participantId", "1");
+  sessionStorage.setItem("roomCode", TEST_ROOM_CODE);
+  sessionStorage.setItem("roomName", "테스트 모임방");
 
-      <AnswerResultPage
-        roomName="하지톤 1팀"
-        targetName="김태현"
-        question="이 사람은 주말에 ____를 할 것 같은 인상이다!"
-        answers={[
-          { submitterId: 1, submitterName: "김태현", textAnswer: "카페에서 커피마시면서 조용히 공부" },
-          { submitterId: 2, submitterName: "김가빈", textAnswer: "계획 없이 차타고 놀러가기" },
-          { submitterId: 3, submitterName: "이혁", textAnswer: "집에서 좋아하는 영화를 보면서 맛있는 음식을 시켜 먹을" },
-        ]}
-        voteUpdate={null}
-        onNext={() => {}}
-      />
-      <ChoiceResultPage
-        roomName="하지톤 1팀"
-        targetName="김태현"
-        question={`이 사람의 형제 관계는\n어떻게 될까?`}
-        options={["남매", "자매", "외동", "형제"]}
-        counts={{ 남매: 3, 자매: 0, 외동: 0, 형제: 0 }}
-        trueAnswer="남매"
-        myAnswer="남매"
-        voteUpdate={null}
-        onNext={() => {}}
-      />
-      <VoteResultPage
-        roomName="하지톤 1팀"
-        question={`어렸을 때, 가장 엄마 말을\n안들었을 것 같은 사람은?`}
-        ranking={MOCK_PARTICIPANTS.map((p, idx) => ({
-          participantId: p.participantId,
-          name: p.name,
-          votes: Math.max(0, 4 - idx),
-        }))}
-        voteUpdate={null}
-        onNext={() => {}}
-      />
+  return (
+    <div className="flex min-h-dvh flex-col gap-8 bg-black p-5">
+      <div className="flex flex-col gap-1">
+        <p className="text-head3-1 text-white">테스트 메뉴</p>
+        <p className="text-body2-2 text-gray-400">
+          버튼을 눌러 케이스별 화면으로 들어가서 직접 확인해보세요.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <p className="text-body1-1 text-white">백엔드 연결 확인</p>
+        <p className="text-caption1-2 text-gray-500">
+          방 생성/참여/동기화/결과조회/나가기 REST API를 실제 서버에 직접 쏴볼 수 있어요.
+        </p>
+        <Link
+          to="/test/api"
+          className="flex h-14 items-center justify-center rounded-xl bg-main-blue text-body1-2 text-white"
+        >
+          REST API 연결 테스트
+        </Link>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <p className="text-body1-1 text-white">게임 종료 이후 전체 흐름</p>
+        <p className="text-caption1-2 text-gray-500">
+          결과지 보기 → 이미지 저장 → 대기 화면 복귀 버튼까지 확인할 수 있어요.
+        </p>
+        <Link
+          to={`/rooms/${TEST_ROOM_CODE}/result`}
+          className="flex h-14 items-center justify-center rounded-xl bg-main-gradient text-body1-2 text-white"
+        >
+          게임 종료 → 최종 결과지 전체 테스트
+        </Link>
+        <Link
+          to="/countdown"
+          className="flex h-14 items-center justify-center rounded-xl bg-main-blue text-body1-2 text-white"
+        >
+          카운트다운
+        </Link>
+      </div>
+
+      {TEST_CASE_GROUPS.map((group) => (
+        <div key={group.title} className="flex flex-col gap-2">
+          <p className="text-body1-1 text-white">{group.title}</p>
+          <div className="flex flex-col gap-2">
+            {group.cases.map((testCase) => (
+              <Link
+                key={testCase.id}
+                to={`/test/case/${testCase.id}`}
+                className="flex items-center justify-between gap-3 rounded-xl bg-gray-950 px-4 py-3"
+              >
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-body2-1 text-white">{testCase.label}</span>
+                  {testCase.description && (
+                    <span className="text-caption1-2 text-gray-500">{testCase.description}</span>
+                  )}
+                </span>
+                <span className="shrink-0 text-gray-500">›</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

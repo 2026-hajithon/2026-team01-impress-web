@@ -1,7 +1,7 @@
-import GeneralOptionStar1 from "@assets/Game/GeneralOptionStar1.svg";
-import GeneralOptionStar2 from "@assets/Game/GeneralOptionStar2.svg";
-import GeneralOptionDotSmall from "@assets/Game/GeneralOptionDotSmall.svg";
-import GeneralOptionDotBig from "@assets/Game/GeneralOptionDotBig.svg";
+import GeneralOptionStar1 from "@assets/Game/Option/GeneralOptionStar1.svg";
+import GeneralOptionStar2 from "@assets/Game/Option/GeneralOptionStar2.svg";
+import GeneralOptionDotSmall from "@assets/Game/Option/GeneralOptionDotSmall.svg";
+import GeneralOptionDotBig from "@assets/Game/Option/GeneralOptionDotBig.svg";
 
 // Figma "공동 질문" 선택된 참가자 칸(226:1845)의 그래픽을 그대로 옮긴 값.
 const SelectedDecoration = () => (

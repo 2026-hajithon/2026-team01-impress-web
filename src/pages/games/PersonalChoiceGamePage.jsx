@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ChoiceGameTitle from "@components/games/ChoiceGameTitle";
-import GameBackground from "./GameBackground";
+import GameBackground from "@components/games/GameBackground";
 import PersonalGameOptions from "@components/games/PersonalGameOptions";
 import Header from "@components/Header";
 
@@ -12,6 +12,7 @@ const PersonalChoiceGamePage = ({
   options,
   submitted,
   onSubmit,
+  onLeave,
 }) => {
   const [selected, setSelected] = useState(null);
   const locked = submitted || selected !== null;
@@ -25,7 +26,7 @@ const PersonalChoiceGamePage = ({
   return (
     <div className="relative flex min-h-dvh flex-col">
       <GameBackground />
-      <Header title={roomName} timer={timeLeft} />
+      <Header title={roomName} timer={timeLeft} onLeave={onLeave} />
       <div className="flex flex-1 flex-col gap-8 pt-4 pb-8">
         <ChoiceGameTitle
           chipPrefix={targetName}

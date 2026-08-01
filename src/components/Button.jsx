@@ -1,6 +1,7 @@
 const buttonVariants = {
   primary: "bg-main-gradient",
   secondary: "bg-main-blue",
+  pink: "bg-main-pink",
   neutral: "bg-gray-950",
 };
 
