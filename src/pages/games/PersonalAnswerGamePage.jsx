@@ -15,6 +15,7 @@ const PersonalAnswerGamePage = ({
   targetName,
   question,
   submitted,
+  isQuestionTarget = false,
   onSubmit,
   onLeave,
 }) => {
@@ -22,7 +23,7 @@ const PersonalAnswerGamePage = ({
   const { prefixText, suffixText } = splitQuestion(question);
 
   const handleSubmit = () => {
-    if (submitted || !value.trim()) return;
+    if (submitted || isQuestionTarget || !value.trim()) return;
     onSubmit(value.trim());
   };
 
@@ -38,11 +39,18 @@ const PersonalAnswerGamePage = ({
           suffixText={suffixText}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          disabled={submitted}
+          disabled={submitted || isQuestionTarget}
         />
         <div className="px-5">
-          <Button onClick={handleSubmit} disabled={submitted || !value.trim()}>
-            {submitted ? "제출 완료" : "제출하기"}
+          <Button
+            onClick={handleSubmit}
+            disabled={submitted || isQuestionTarget || !value.trim()}
+          >
+            {isQuestionTarget
+              ? "질문의 주인공은 답변할 수 없어요"
+              : submitted
+                ? "제출 완료"
+                : "제출하기"}
           </Button>
         </div>
       </div>
