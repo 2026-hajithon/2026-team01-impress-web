@@ -16,6 +16,7 @@ const PersonalAnswerGamePage = ({
   question,
   submitted,
   onSubmit,
+  onLeave,
 }) => {
   const [value, setValue] = useState("");
   const { prefixText, suffixText } = splitQuestion(question);
@@ -28,7 +29,7 @@ const PersonalAnswerGamePage = ({
   return (
     <div className="relative flex min-h-dvh flex-col">
       <GameBackground />
-      <Header title={roomName} timer={timeLeft} />
+      <Header title={roomName} timer={timeLeft} onLeave={onLeave} />
       <div className="flex flex-1 flex-col justify-between gap-8 pt-4 pb-8">
         <AnswerGameTitle
           chipPrefix={targetName}

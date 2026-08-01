@@ -3,18 +3,41 @@ import Chip from "@components/Chip";
 import GameBackground from "@components/games/GameBackground";
 import Header from "@components/Header";
 import Button from "@components/Button";
+import Rank1 from "@assets/Game/Rank/Rank1.svg";
+import Rank2 from "@assets/Game/Rank/Rank2.svg";
+import Rank3 from "@assets/Game/Rank/Rank3.svg";
+import Rank4 from "@assets/Game/Rank/Rank4.svg";
+import Rank5 from "@assets/Game/Rank/Rank5.svg";
+import Rank6 from "@assets/Game/Rank/Rank6.svg";
+import Rank7 from "@assets/Game/Rank/Rank7.svg";
+import Rank8 from "@assets/Game/Rank/Rank8.svg";
 
-const rankBadgeClass = (idx, isLast) => {
-  if (idx === 0) return "bg-main-gradient";
-  if (isLast) return "bg-gray-500";
-  if (idx === 1) return "bg-main-pink";
-  if (idx === 2) return "bg-main-pink-1";
-  return "bg-main-blue";
+const RANK_IMAGES = [Rank1, Rank2, Rank3, Rank4, Rank5, Rank6, Rank7, Rank8];
+
+// entry.rank가 이미 내려오면 그대로 쓰고(동점 처리를 서버가 맡음), 없을 때만
+// 앞에서부터 표를 비교해서 동점자는 같은 등수를 받도록 계산한다(1,2,2,4 방식).
+// ranking은 votes 내림차순으로 정렬되어 들어온다고 가정한다.
+const resolveRanks = (ranking) => {
+  const ranks = [];
+
+  ranking.forEach((entry, idx) => {
+    if (entry.rank !== undefined) {
+      ranks.push(entry.rank);
+    } else if (idx === 0) {
+      ranks.push(1);
+    } else {
+      const prevEntry = ranking[idx - 1];
+      ranks.push(prevEntry.votes === entry.votes ? ranks[idx - 1] : idx + 1);
+    }
+  });
+
+  return ranks;
 };
 
 // Figma "공동질문 결과"(226:1763)
-const VoteResultPage = ({ roomName, question, ranking = [], voteUpdate, onNext }) => {
+const VoteResultPage = ({ roomName, question, ranking = [], voteUpdate, onNext, onLeave }) => {
   const [voted, setVoted] = useState(false);
+  const ranks = resolveRanks(ranking);
 
   const handleNext = () => {
     setVoted(true);
@@ -24,7 +47,7 @@ const VoteResultPage = ({ roomName, question, ranking = [], voteUpdate, onNext }
   return (
     <div className="relative flex min-h-dvh flex-col">
       <GameBackground />
-      <Header title={roomName} />
+      <Header title={roomName} onLeave={onLeave} />
       <div className="flex flex-1 flex-col gap-8 px-5 pt-6 pb-32">
         <div className="flex flex-col items-start gap-3">
           <Chip prefix={"공통"} children={"질문"} />
@@ -32,27 +55,29 @@ const VoteResultPage = ({ roomName, question, ranking = [], voteUpdate, onNext }
         </div>
 
         <div className="flex flex-col gap-5">
-          {ranking.map((entry, idx) => (
-            <div key={entry.participantId} className="flex items-center gap-5">
-              <div
-                className={[
-                  "flex size-11.25 shrink-0 -rotate-[13.44deg] items-center justify-center rounded-full",
-                  "text-head3-1 text-white",
-                  rankBadgeClass(idx, idx === ranking.length - 1),
-                ].join(" ")}
-              >
-                {idx + 1}
+          {ranking.map((entry, idx) => {
+            const rank = ranks[idx];
+            const rankImage = RANK_IMAGES[Math.min(rank, RANK_IMAGES.length) - 1];
+
+            return (
+              <div key={entry.participantId} className="flex items-center gap-5">
+                <img src={rankImage} alt={`${rank}등`} className="size-11.25 shrink-0" />
+                <div className="flex flex-1 items-center justify-between">
+                  <p className="text-sub1-1 text-white">{entry.name}</p>
+                  <p className="text-sub1-1 text-white">{entry.votes}표</p>
+                </div>
               </div>
-              <div className="flex flex-1 items-center justify-between">
-                <p className="text-sub1-1 text-white">{entry.name}</p>
-                <p className="text-sub1-1 text-white">{entry.votes}표</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-107.5 px-5 pt-3 pb-8">
+      <div className="fixed inset-x-0 bottom-0 mx-auto flex w-full max-w-107.5 flex-col gap-2 px-5 pt-3 pb-8">
+        {voted && (
+          <p className="text-center text-caption1-2 text-main-pink-1">
+            *과반수가 참여할 때까지 잠시만 기다려주세요.
+          </p>
+        )}
         <Button onClick={handleNext} disabled={voted}>
           {voted
             ? `${voteUpdate?.votedCount ?? 0}/${voteUpdate?.requiredCount ?? "?"} 대기 중`

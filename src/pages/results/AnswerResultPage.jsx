@@ -17,6 +17,7 @@ const AnswerResultPage = ({
   answers = [],
   voteUpdate,
   onNext,
+  onLeave,
 }) => {
   const [voted, setVoted] = useState(false);
   const { prefixText, suffixText } = splitQuestion(question);
@@ -29,7 +30,7 @@ const AnswerResultPage = ({
   return (
     <div className="relative flex min-h-dvh flex-col">
       <GameBackground />
-      <Header title={roomName} />
+      <Header title={roomName} onLeave={onLeave} />
       <div className="flex flex-1 flex-col gap-10 px-5 pt-6 pb-32">
         <div className="flex flex-col items-start gap-3">
           <Chip prefix={targetName} children={"님에 대한 질문"} />
@@ -60,7 +61,12 @@ const AnswerResultPage = ({
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-107.5 px-5 pt-3 pb-8">
+      <div className="fixed inset-x-0 bottom-0 mx-auto flex w-full max-w-107.5 flex-col gap-2 px-5 pt-3 pb-8">
+        {voted && (
+          <p className="text-center text-caption1-2 text-main-pink-1">
+            *과반수가 참여할 때까지 잠시만 기다려주세요.
+          </p>
+        )}
         <Button onClick={handleNext} disabled={voted}>
           {voted
             ? `${voteUpdate?.votedCount ?? 0}/${voteUpdate?.requiredCount ?? "?"} 대기 중`

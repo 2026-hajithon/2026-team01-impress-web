@@ -11,6 +11,7 @@ const GeneralChoiceGamePage = ({
   participants,
   submitted,
   onSubmit,
+  onLeave,
 }) => {
   const [selected, setSelected] = useState(null);
   const locked = submitted || selected !== null;
@@ -24,7 +25,7 @@ const GeneralChoiceGamePage = ({
   return (
     <div className="relative flex min-h-dvh flex-col">
       <GameBackground />
-      <Header title={roomName} timer={timeLeft} />
+      <Header title={roomName} timer={timeLeft} onLeave={onLeave} />
       <div className="flex flex-col gap-9 pt-4 pb-8">
         <ChoiceGameTitle chipPrefix={"공통"} chipChildren={"질문"} title={question} />
         <GeneralGameOptions

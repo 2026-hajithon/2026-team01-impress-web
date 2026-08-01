@@ -32,6 +32,7 @@ const GameResultPage = () => {
   const [mockMode, setMockMode] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
 
   const cardRefs = useRef([]);
   const date = useMemo(() => formatDate(), []);
@@ -67,6 +68,7 @@ const GameResultPage = () => {
     if (!node) return;
 
     setSaving(true);
+    setSaveMessage("");
     try {
       const dataUrl = await toPng(node, { pixelRatio: 2, backgroundColor: "#101012" });
       const fileName = [roomName, myName, date]
@@ -74,16 +76,27 @@ const GameResultPage = () => {
         .filter(Boolean)
         .join("-");
 
+      const imageBlob = await fetch(dataUrl).then((response) => response.blob());
+      if (imageBlob.type !== "image/png" || imageBlob.size === 0) {
+        throw new Error("생성된 PNG 이미지가 비어 있거나 형식이 올바르지 않습니다.");
+      }
+
+      const imageUrl = URL.createObjectURL(imageBlob);
       const link = document.createElement("a");
       link.download = `${fileName || `impress-result-${activeIndex + 1}`}.png`;
-      link.href = dataUrl;
+      link.href = imageUrl;
+      document.body.appendChild(link);
       link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(imageUrl), 0);
+      setSaveMessage("이미지를 저장했어요.");
     } catch (error) {
       console.error(
         "%c[이미지 저장 ✕] 결과지 캡처에 실패했어요.",
         "color:#ff3b9b; font-weight:bold",
         error,
       );
+      setSaveMessage("이미지 저장에 실패했어요. 다시 시도해주세요.");
     } finally {
       setSaving(false);
     }
@@ -141,6 +154,11 @@ const GameResultPage = () => {
       </div>
 
       <div className="fixed inset-x-0 bottom-0 mx-auto flex w-full max-w-107.5 flex-col gap-2.5 px-5 pt-3 pb-8">
+        {saveMessage && (
+          <p className="text-center text-caption1-2 text-main-pink-1" aria-live="polite">
+            {saveMessage}
+          </p>
+        )}
         <Button variant="pink" onClick={handleSaveImage} loading={saving} disabled={!activeCard}>
           이미지 저장
         </Button>

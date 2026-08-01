@@ -7,6 +7,7 @@ import GeneralChoiceGamePage from "./GeneralChoiceGamePage";
 import AnswerResultPage from "@pages/results/AnswerResultPage";
 import ChoiceResultPage from "@pages/results/ChoiceResultPage";
 import VoteResultPage from "@pages/results/VoteResultPage";
+import LeaveGameModal from "./LeaveGameModal";
 
 const Q_TYPE = {
   BLANK: "BLANK",
@@ -35,6 +36,12 @@ const GameRoundPage = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [lastAnswer, setLastAnswer] = useState(null);
+  const [leaveModalOpen, setLeaveModalOpen] = useState(false);
+
+  // 대기방과 동일하게 참가자 목록에서 내 role을 찾아 방장 여부를 판단한다 (myRole 전용 필드는 따로 없음).
+  const isHost = participants.find((p) => p.participantId === participantId)?.role === "HOST";
+  // 방장만 라운드 중 "나가기"를 볼 수 있다. 실제 나가기 동작(REST 호출 등)은 모달 쪽에서 확정되면 연결한다.
+  const onLeave = isHost ? () => setLeaveModalOpen(true) : undefined;
 
   // 새 라운드로 바뀌면 타이머/제출 상태를 그 라운드 값으로 리셋한다 (렌더 중 상태 조정).
   const [syncedRoundId, setSyncedRoundId] = useState(null);
@@ -90,6 +97,7 @@ const GameRoundPage = () => {
         answers={roundResult.result?.answers ?? []}
         voteUpdate={voteUpdate}
         onNext={handleNext}
+        onLeave={onLeave}
       />
     );
   } else if (isShowingResult && round.qType === Q_TYPE.INDIVIDUAL_OX) {
@@ -104,6 +112,7 @@ const GameRoundPage = () => {
         myAnswer={lastAnswer}
         voteUpdate={voteUpdate}
         onNext={handleNext}
+        onLeave={onLeave}
       />
     );
   } else if (isShowingResult) {
@@ -121,10 +130,11 @@ const GameRoundPage = () => {
         ranking={ranking}
         voteUpdate={voteUpdate}
         onNext={handleNext}
+        onLeave={onLeave}
       />
     );
   } else {
-    const commonProps = { roomName, timeLeft, submitted };
+    const commonProps = { roomName, timeLeft, submitted, onLeave };
 
     if (round.qType === Q_TYPE.BLANK) {
       content = (
@@ -161,6 +171,11 @@ const GameRoundPage = () => {
     <>
       {mockMode && <MockModeBadge />}
       {content}
+      <LeaveGameModal
+        isOpen={leaveModalOpen}
+        onClose={() => setLeaveModalOpen(false)}
+        onConfirm={() => setLeaveModalOpen(false)}
+      />
     </>
   );
 };
