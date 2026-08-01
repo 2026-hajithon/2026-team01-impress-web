@@ -4,8 +4,7 @@
 :root {
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
     "Apple SD Gothic Neo", sans-serif;
-  background-color: #ffffff;
-  /* background-color: #101012; */
+  background-color: #242730;
 }
 
 @keyframes flow-screen-enter-forward {
@@ -26,31 +25,267 @@
   }
 }
 
-::view-transition-old(root) {
+@keyframes flow-screen-dismiss-right {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes flow-screen-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes flow-screen-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes result-card-enter-forward {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes result-card-exit-forward {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-22%);
+  }
+}
+
+@keyframes countdown-step-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.app-screen {
+  view-transition-name: app-screen;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
   animation: none;
 }
 
-::view-transition-new(root) {
+::view-transition-group(app-screen) {
+  overflow: hidden;
+  z-index: 0;
+}
+
+::view-transition-old(app-screen) {
+  animation: none;
+}
+
+::view-transition-new(app-screen) {
+  animation: none;
+}
+
+html[data-flow-transition="forward"]::view-transition-new(app-screen) {
   animation: flow-screen-enter-forward 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
   box-shadow: -12px 0 28px rgb(0 0 0 / 18%);
 }
 
-html[data-flow-transition="backward"]::view-transition-old(root) {
+html[data-flow-transition="backward"]::view-transition-old(app-screen) {
   z-index: 2;
   animation: flow-screen-enter-backward 320ms cubic-bezier(0.22, 1, 0.36, 1) reverse both;
   box-shadow: 12px 0 28px rgb(0 0 0 / 18%);
 }
 
-html[data-flow-transition="backward"]::view-transition-new(root) {
+html[data-flow-transition="backward"]::view-transition-new(app-screen) {
   z-index: 1;
   animation: none;
   box-shadow: none;
 }
 
+html[data-flow-transition="dismiss"]::view-transition-old(app-screen) {
+  z-index: 2;
+  animation: flow-screen-dismiss-right 380ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  box-shadow: -12px 0 28px rgb(0 0 0 / 18%);
+}
+
+html[data-flow-transition="dismiss"]::view-transition-new(app-screen) {
+  z-index: 1;
+  animation: none;
+  box-shadow: none;
+}
+
+html[data-flow-transition="fade"]::view-transition-old(app-screen) {
+  animation: flow-screen-fade-out 220ms ease-in both;
+}
+
+html[data-flow-transition="fade"]::view-transition-new(app-screen) {
+  animation: flow-screen-fade-in 300ms ease-out both;
+}
+
+.result-card-transition {
+  view-transition-name: result-card;
+}
+
+.result-controls-transition {
+  view-transition-name: result-controls;
+}
+
+::view-transition-group(result-card) {
+  overflow: hidden;
+  z-index: 1;
+}
+
+::view-transition-group(result-controls) {
+  z-index: 2;
+  animation: none;
+}
+
+html[data-flow-transition="card-forward"]::view-transition-old(result-controls),
+html[data-flow-transition="card-backward"]::view-transition-old(result-controls) {
+  animation: none;
+  opacity: 0;
+}
+
+html[data-flow-transition="card-forward"]::view-transition-new(result-controls),
+html[data-flow-transition="card-backward"]::view-transition-new(result-controls) {
+  animation: none;
+}
+
+html[data-flow-transition="card-forward"]::view-transition-old(result-card) {
+  animation: result-card-exit-forward 280ms ease-in both;
+}
+
+html[data-flow-transition="card-forward"]::view-transition-new(result-card) {
+  animation: result-card-enter-forward 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html[data-flow-transition="card-backward"]::view-transition-old(result-card) {
+  animation: result-card-enter-forward 360ms cubic-bezier(0.22, 1, 0.36, 1) reverse both;
+}
+
+html[data-flow-transition="card-backward"]::view-transition-new(result-card) {
+  animation: result-card-exit-forward 360ms cubic-bezier(0.22, 1, 0.36, 1) reverse both;
+}
+
+.countdown-step-enter {
+  animation: countdown-step-enter 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 한글 문장을 단어 단위로 줄바꿈하되, 긴 단일 문자열만 영역 안에서 안전하게 나눈다. */
+.text-wrap-words {
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(root),
-  ::view-transition-new(root) {
+  ::view-transition-new(root),
+  ::view-transition-old(app-screen),
+  ::view-transition-new(app-screen),
+  ::view-transition-old(result-card),
+  ::view-transition-new(result-card),
+  ::view-transition-old(result-controls),
+  ::view-transition-new(result-controls) {
     animation: none;
+  }
+
+  .countdown-step-enter {
+    animation: none;
+  }
+}
+
+@keyframes modal-backdrop-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modal-backdrop-exit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-panel-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+
+.modal-backdrop-enter {
+  animation: modal-backdrop-enter 200ms ease-out both;
+}
+
+.modal-panel-enter {
+  transform-origin: center;
+  animation: modal-panel-enter 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.modal-backdrop-exit {
+  pointer-events: none;
+  animation: modal-backdrop-exit 200ms ease-in both;
+}
+
+.modal-panel-exit {
+  transform-origin: center;
+  animation: modal-panel-exit 220ms ease-in both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop-enter,
+  .modal-panel-enter,
+  .modal-backdrop-exit,
+  .modal-panel-exit {
+    animation-duration: 1ms;
   }
 }
 

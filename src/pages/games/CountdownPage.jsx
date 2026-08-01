@@ -35,9 +35,19 @@ const CountdownPage = ({ onComplete }) => {
     <div className="relative isolate flex h-dvh min-h-dvh flex-col items-center justify-center overflow-hidden bg-black">
       <GameBackground />
       {step.key === "start" ? (
-        <img src={GameStartIcon} className="h-[190px] w-[260px]" alt="Game Start" />
+        <img
+          key={step.key}
+          src={GameStartIcon}
+          className="countdown-step-enter h-[190px] w-[260px]"
+          alt="Game Start"
+        />
       ) : (
-        <img src={step.image} className="h-20 w-auto" alt={step.key} />
+        <img
+          key={step.key}
+          src={step.image}
+          className="countdown-step-enter h-20 w-auto"
+          alt={step.key}
+        />
       )}
     </div>
   );

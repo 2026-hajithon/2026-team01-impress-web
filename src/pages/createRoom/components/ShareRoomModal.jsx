@@ -3,6 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 
 import closeIcon from "@assets/utils/Close.svg";
 import copyIcon from "@assets/utils/Copy.svg";
+import { useModalPresence } from "@hooks/useModalPresence";
 
 const ShareRoomModal = ({
   isOpen,
@@ -10,7 +11,9 @@ const ShareRoomModal = ({
   roomName,
   roomCode,
 }) => {
-  if (!isOpen) return null;
+  const { shouldRender, isClosing } = useModalPresence(isOpen);
+
+  if (!shouldRender) return null;
 
   const displayCode = roomCode || "0000";
   // QR을 폰 기본 카메라로 찍어도 코드 입력 방식과 동일하게 방 정보 확인 모달을 거치도록
@@ -34,23 +37,26 @@ const ShareRoomModal = ({
   return createPortal(
     <div
       className={[
+        isClosing ? "modal-backdrop-exit" : "modal-backdrop-enter",
         "fixed inset-0 z-50",
         "flex items-center justify-center",
         "bg-black/[0.44] px-5 py-8",
       ].join(" ")}
       onClick={onClose}
     >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="share-room-modal-title"
+      <div
         className={[
-          "w-full max-w-[320px] overflow-hidden",
-          "-translate-y-[4dvh]",
-          "rounded-[25px] bg-white",
+          isClosing ? "modal-panel-exit" : "modal-panel-enter",
+          "w-full max-w-[320px]",
         ].join(" ")}
-        onClick={(event) => event.stopPropagation()}
       >
+        <section
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="share-room-modal-title"
+          className="w-full -translate-y-[4dvh] overflow-hidden rounded-[25px] bg-white"
+          onClick={(event) => event.stopPropagation()}
+        >
         {/* 상단 제목과 닫기 */}
         <header className="grid grid-cols-[32px_1fr_32px] items-center p-2.5">
           <span aria-hidden="true" />
@@ -126,7 +132,8 @@ const ShareRoomModal = ({
             </div>
           </div>
         </div>
-      </section>
+        </section>
+      </div>
     </div>,
     document.body,
   );

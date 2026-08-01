@@ -1,6 +1,7 @@
 import { useRoomSocket } from "@hooks/useRoomSocket";
 
 import { RoomAPI } from "@apis/RoomAPI";
+import { socketClient } from "@apis/socketClient";
 
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -12,6 +13,20 @@ import Button from "@components/Button";
 import ConnectionStatusBanner from "@components/ConnectionStatusBanner";
 import ShareRoomModal from "@pages/createRoom/components/ShareRoomModal";
 
+const clearMemberSession = () => {
+  [
+    "roomCode",
+    "roomName",
+    "hostName",
+    "participantId",
+    "participantName",
+    "participantRole",
+    "role",
+    "gameMode",
+    "mockParticipants",
+  ].forEach((key) => sessionStorage.removeItem(key));
+};
+
 const MemberWaitingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,7 +34,6 @@ const MemberWaitingPage = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const [isLeaving, setIsLeaving] = useState(false);
-  const [leaveError, setLeaveError] = useState("");
 
   const storedParticipantId =
     sessionStorage.getItem("participantId");
@@ -54,49 +68,40 @@ const MemberWaitingPage = () => {
   useEffect(() => {
     if (!kicked) return;
 
-    sessionStorage.removeItem("roomCode");
-    sessionStorage.removeItem("roomName");
-    sessionStorage.removeItem("participantId");
-    sessionStorage.removeItem("role");
+    clearMemberSession();
 
     navigate("/", { replace: true });
   }, [kicked, navigate]);
 
   const handleLeaveRoom = async () => {
-    if (!roomCode || !participantId || isLeaving) return;
+    if (isLeaving) return;
 
     setIsLeaving(true);
-    setLeaveError("");
 
     try {
-      await RoomAPI.leaveRoom(roomCode, participantId);
-
-      sessionStorage.removeItem("roomCode");
-      sessionStorage.removeItem("roomName");
-      sessionStorage.removeItem("hostName");
-      sessionStorage.removeItem("participantId");
-      sessionStorage.removeItem("participantName");
-      sessionStorage.removeItem("participantRole");
-
-      navigate("/");
+      if (roomCode && participantId) {
+        await RoomAPI.leaveRoom(roomCode, participantId);
+      }
     } catch (error) {
-      const apiError = error.response?.data?.error;
-
-      setLeaveError(
-        apiError?.message ||
-          apiError ||
-          "모임방을 나가지 못했어요.",
-      );
+      // 서버 세션이 이미 만료되었으면 REST 나가기 요청은 실패할 수 있다.
+      // 사용자의 화면 이탈은 막지 않고 로컬 연결과 세션만 확실히 정리한다.
+      console.warn("[REST] 방 나가기 요청 실패 — 로컬에서 나가기를 계속합니다.", error);
     } finally {
-      setIsLeaving(false);
+      try {
+        await socketClient.disconnect();
+      } catch (error) {
+        console.warn("[WS] 연결 정리 실패 — 홈 이동을 계속합니다.", error);
+      }
+      clearMemberSession();
+      navigate("/", { replace: true });
     }
   };
 
   return (
-    <main className="min-h-dvh bg-white">
+    <main className="min-h-dvh bg-gray-950">
       <section
         className={[
-          "mx-auto flex min-h-dvh w-full max-w-[430px]",
+          "mx-auto flex min-h-dvh w-full max-w-[500px]",
           "flex-col overflow-hidden bg-black",
         ].join(" ")}
       >
@@ -175,11 +180,6 @@ const MemberWaitingPage = () => {
         </div>
 
         <footer className="shrink-0 px-5 pb-8 pt-3">
-          {leaveError && (
-            <p className="mb-2 text-caption1-2 text-main-pink">
-              {leaveError}
-            </p>
-          )}
           <Button
             variant="secondary"
             onClick={handleLeaveRoom}

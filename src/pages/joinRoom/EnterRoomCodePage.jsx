@@ -91,7 +91,7 @@ const EnterRoomCodePage = () => {
   };
 
   return (
-    <main className="relative isolate mx-auto min-h-dvh w-full max-w-[430px] bg-black">
+    <main className="relative isolate mx-auto min-h-dvh w-full max-w-[500px] bg-black">
       <GameBackground />
 
       <section className="flex min-h-dvh flex-col">

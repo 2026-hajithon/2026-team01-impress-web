@@ -11,6 +11,7 @@ const PersonalChoiceGamePage = ({
   question,
   options,
   submitted,
+  isQuestionTarget = false,
   onSubmit,
   onLeave,
 }) => {
@@ -40,7 +41,7 @@ const PersonalChoiceGamePage = ({
           disabled={locked}
         />
         <p className="text-center text-body1-2 text-gray-50">
-          한번 선택하면 바꿀 수 없어요
+          {isQuestionTarget ? "본인만의 정답을 골라주세요!" : "한번 선택하면 바꿀 수 없어요"}
         </p>
       </div>
     </div>

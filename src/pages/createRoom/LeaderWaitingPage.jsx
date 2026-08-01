@@ -10,6 +10,7 @@ import ConnectionStatusBanner from "@components/ConnectionStatusBanner";
 import { RoomAPI } from "@apis/RoomAPI";
 import { socketClient } from "@apis/socketClient";
 import { useRoomSocket } from "@hooks/useRoomSocket";
+import { navigateWithTransition } from "@utils/navigateWithTransition";
 import { isHostRole } from "@utils/participantRoles";
 
 import KickMemberModal from "./components/KickMemberModal";
@@ -21,6 +22,9 @@ const clearRoomSession = () => {
     (key) => sessionStorage.removeItem(key),
   );
 };
+
+const MODAL_EXIT_DURATION = 220;
+const wait = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
 
 const HostWaitingRoomPage = () => {
   const navigate = useNavigate();
@@ -72,15 +76,21 @@ const HostWaitingRoomPage = () => {
 
   const handleConfirmLeave = async () => {
     setIsLeaveModalOpen(false);
+    const modalExit = wait(MODAL_EXIT_DURATION);
 
     try {
       await RoomAPI.leaveRoom(roomCode, participantId);
     } catch (error) {
       console.error("%c[REST ✕] 방 나가기 실패", "color:#ff3b9b; font-weight:bold", error);
     } finally {
-      socketClient.disconnect();
+      await modalExit;
+      try {
+        await socketClient.disconnect();
+      } catch (error) {
+        console.warn("[WS] 연결 정리 실패 — 방 폭파 화면 전환을 계속합니다.", error);
+      }
       clearRoomSession();
-      navigate("/", { replace: true });
+      navigateWithTransition(navigate, "/", { replace: true }, "dismiss");
     }
   };
 
@@ -103,10 +113,10 @@ const HostWaitingRoomPage = () => {
   };
 
   return (
-    <main className="min-h-dvh bg-white">
+    <main className="min-h-dvh bg-gray-950">
       <section
         className={[
-          "mx-auto flex h-dvh w-full max-w-[430px]",
+          "mx-auto flex h-dvh w-full max-w-[500px]",
           "flex-col overflow-hidden bg-black",
         ].join(" ")}
       >

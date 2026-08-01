@@ -59,7 +59,7 @@ const PersonalGameOptions = ({ options = [], selected, onSelect, disabled = fals
             aria-pressed={isSelected}
           >
             {isSelected && <SelectedDecoration />}
-            <span className="relative">{option.content}</span>
+            <span className="text-wrap-words relative max-w-full text-center">{option.content}</span>
           </button>
         );
       })}

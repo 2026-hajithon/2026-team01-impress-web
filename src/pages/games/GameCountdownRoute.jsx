@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
+import { navigateWithTransition } from "@utils/navigateWithTransition";
 import CountdownPage from "./CountdownPage";
 
 const GameCountdownRoute = () => {
@@ -6,10 +7,10 @@ const GameCountdownRoute = () => {
   const navigate = useNavigate();
 
   const handleComplete = () => {
-    navigate(`/rooms/${roomCode}/loading`, {
+    navigateWithTransition(navigate, `/rooms/${roomCode}/loading`, {
       replace: true,
       state: { nextPath: `/rooms/${roomCode}/round` },
-    });
+    }, "fade");
   };
 
   return <CountdownPage onComplete={handleComplete} />;

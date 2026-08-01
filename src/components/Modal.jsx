@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 
 import closeIcon from "@assets/utils/Close.svg";
 import Button from "@components/Button";
+import { useModalPresence } from "@hooks/useModalPresence";
 
 const Modal = ({
   isOpen,
@@ -18,8 +19,9 @@ const Modal = ({
   className = "",
 }) => {
   const titleId = useId();
+  const { shouldRender, isClosing } = useModalPresence(isOpen);
 
-  if (!isOpen) return null;
+  if (!shouldRender) return null;
 
   const handleBackdropClick = () => {
     if (closeOnBackdrop) {
@@ -30,6 +32,7 @@ const Modal = ({
   return createPortal(
     <div
       className={[
+        isClosing ? "modal-backdrop-exit" : "modal-backdrop-enter",
         "fixed inset-0 z-50",
         "flex items-center justify-center",
         "bg-black/[0.59] px-5 py-8",
@@ -41,6 +44,7 @@ const Modal = ({
         aria-modal="true"
         aria-labelledby={titleId}
         className={[
+          isClosing ? "modal-panel-exit" : "modal-panel-enter",
           "w-full max-w-[320px] overflow-hidden",
           "rounded-[25px] bg-white",
           className,

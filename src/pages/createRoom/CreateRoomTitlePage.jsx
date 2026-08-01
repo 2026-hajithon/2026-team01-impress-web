@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import createRoomDoneGraphic from "@assets/Room/CreateRoomDone.svg";
@@ -9,7 +9,10 @@ import Button from "@components/Button";
 import GameBackground from "@components/games/GameBackground";
 import TextField from "@components/TextField";
 import { RoomAPI } from "@apis/RoomAPI";
+import { MODAL_EXIT_DURATION } from "@hooks/useModalPresence";
 import { navigateWithTransition } from "@utils/navigateWithTransition";
+
+const wait = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
 
 const CreateRoomTitlePage = () => {
   const [roomName, setRoomName] = useState("");
@@ -17,6 +20,7 @@ const CreateRoomTitlePage = () => {
   const [createdRoomCode, setCreatedRoomCode] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const isEnteringWaitingRef = useRef(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -51,12 +55,13 @@ const CreateRoomTitlePage = () => {
     }
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
+  const handleEnterWaitingRoom = async () => {
+    if (isEnteringWaitingRef.current) return;
+    isEnteringWaitingRef.current = true;
 
-  const handleInvite = () => {
     setIsModalOpen(false);
+    await wait(MODAL_EXIT_DURATION);
+
     const roomCode = createdRoomCode || sessionStorage.getItem("roomCode") || "LOCAL";
     navigateWithTransition(navigate, `/rooms/${roomCode}/waiting`);
   };
@@ -66,10 +71,10 @@ const CreateRoomTitlePage = () => {
   };
 
   return (
-    <main className="min-h-dvh bg-white">
+    <main className="min-h-dvh bg-gray-950">
       <section
         className={[
-          "relative isolate mx-auto flex min-h-dvh w-full max-w-[430px]",
+          "relative isolate mx-auto flex min-h-dvh w-full max-w-[500px]",
           "flex-col bg-black",
         ].join(" ")}
       >
@@ -125,7 +130,8 @@ const CreateRoomTitlePage = () => {
         </div>
         <Modal
           isOpen={isModalOpen}
-          onClose={handleCloseModal}
+          onClose={handleEnterWaitingRoom}
+          closeOnBackdrop
           graphic={
             <img
               src={createRoomDoneGraphic}
@@ -143,7 +149,7 @@ const CreateRoomTitlePage = () => {
             </>
           }
           actionLabel="초대하기"
-          onAction={handleInvite}
+          onAction={handleEnterWaitingRoom}
         />
       </section>
     </main>

@@ -53,7 +53,7 @@ const FrontendTestSetupPage = () => {
   };
 
   return (
-    <main className="relative mx-auto flex min-h-dvh w-full max-w-107.5 flex-col overflow-hidden bg-black px-5 py-10">
+    <main className="relative mx-auto flex min-h-dvh w-full max-w-[500px] flex-col overflow-hidden bg-black px-5 py-10">
       <GameBackground />
       <div className="relative flex flex-1 flex-col gap-7">
         <div className="flex flex-col gap-2">

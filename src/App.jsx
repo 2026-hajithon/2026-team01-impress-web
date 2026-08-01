@@ -29,23 +29,23 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<StartPage />} />
-        <Route path="/start" element={<Navigate to="/" replace />} />
-        <Route path="/enter-leader-name" element={<EnterLeaderNamePage />} />
-        <Route path="/create-room-title" element={<CreateRoomTitlePage />} />
-        <Route path="/leader-waiting" element={<WaitingRoomRoute />} />
-        <Route path="/rooms/:roomCode/waiting" element={<WaitingRoomRoute />} />
-        <Route path="/rooms/:roomCode/countdown" element={<GameCountdownRoute />} />
-        <Route path="/rooms/:roomCode/loading" element={<GameLoadingPage />} />
-        <Route path="/rooms/:roomCode/round" element={<GameRoundPage />} />
-        <Route path="/rooms/:roomCode/result" element={<GameResultPage />} />
-        <Route path="/enter-room-code" element={<EnterRoomCodePage />} />
-        <Route path="/scan-room-qr" element={<ScanRoomQrPage />} />
-        <Route path="/enter-member-name" element={<EnterMemberNamePage />} />
-        <Route path="/member-waiting" element={<MemberWaitingPage />} />
-        <Route path="/countdown" element={<CountdownPage />} />
-        <Route path="/onboarding" element={<OnboardingPage />} />
         <Route element={<Layout />}>
+          <Route path="/" element={<StartPage />} />
+          <Route path="/start" element={<Navigate to="/" replace />} />
+          <Route path="/enter-leader-name" element={<EnterLeaderNamePage />} />
+          <Route path="/create-room-title" element={<CreateRoomTitlePage />} />
+          <Route path="/leader-waiting" element={<WaitingRoomRoute />} />
+          <Route path="/rooms/:roomCode/waiting" element={<WaitingRoomRoute />} />
+          <Route path="/rooms/:roomCode/countdown" element={<GameCountdownRoute />} />
+          <Route path="/rooms/:roomCode/loading" element={<GameLoadingPage />} />
+          <Route path="/rooms/:roomCode/round" element={<GameRoundPage />} />
+          <Route path="/rooms/:roomCode/result" element={<GameResultPage />} />
+          <Route path="/enter-room-code" element={<EnterRoomCodePage />} />
+          <Route path="/scan-room-qr" element={<ScanRoomQrPage />} />
+          <Route path="/enter-member-name" element={<EnterMemberNamePage />} />
+          <Route path="/member-waiting" element={<MemberWaitingPage />} />
+          <Route path="/countdown" element={<CountdownPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/test" element={<TestPage />} />
           <Route path="/test/case/:caseId" element={<TestCasePage />} />
           <Route path="/test/api" element={<ApiConnectionTestPage />} />

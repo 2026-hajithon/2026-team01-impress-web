@@ -22,8 +22,7 @@ const Round = ({ round, session, onSaveAnswer, onCompleteRound, onLeave }) => {
   }));
   const [votedForNextRound, setVotedForNextRound] = useState(false);
   const currentParticipantId = session.participants[0]?.participantId;
-  const isQuestionTarget =
-    round.qType === "BLANK" && round.targetId === currentParticipantId;
+  const isQuestionTarget = round.targetId === currentParticipantId;
 
   const finishAnswering = useCallback((answer) => {
     if (phase !== "answering") return;
@@ -130,7 +129,7 @@ const Round = ({ round, session, onSaveAnswer, onCompleteRound, onLeave }) => {
         {...commonProps}
         targetName={round.targetName}
         question={round.question}
-        isQuestionTarget={isQuestionTarget}
+        isQuestionTarget={round.qType === "BLANK" && isQuestionTarget}
         onSubmit={finishAnswering}
       />
     );
@@ -143,6 +142,7 @@ const Round = ({ round, session, onSaveAnswer, onCompleteRound, onLeave }) => {
         targetName={round.targetName}
         question={round.question}
         options={round.options}
+        isQuestionTarget={isQuestionTarget}
         onSubmit={finishAnswering}
       />
     );

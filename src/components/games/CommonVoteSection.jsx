@@ -19,7 +19,7 @@ const CommonVoteSection = ({ question, totalVotes = 0, topVotes = 0, stampNumber
     <div className="flex flex-col items-start gap-3 px-5">
       <div className="flex flex-col items-start gap-2">
         <img src={ResultVoteIcon} className="size-7" alt="" aria-hidden="true" />
-        <p className="whitespace-pre-wrap text-sub1-1 text-white">{question}</p>
+        <p className="text-wrap-words w-full text-left text-sub1-1 text-white">{question}</p>
       </div>
       <div className="flex w-full items-end justify-between">
         <p className="text-body1-1 text-white">

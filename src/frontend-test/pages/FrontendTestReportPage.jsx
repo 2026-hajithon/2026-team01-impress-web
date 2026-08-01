@@ -6,6 +6,7 @@ import GameBackground from "@components/games/GameBackground";
 import Header from "@components/Header";
 import ReportCardView from "@components/games/ReportCardView";
 import { buildReportCards } from "@utils/reportCards";
+import { runWithTransition } from "@utils/navigateWithTransition";
 import { useFrontendTest } from "../FrontendTestContext";
 import { createFinalResult } from "../testSession";
 
@@ -58,6 +59,16 @@ const FrontendTestReportPage = () => {
     navigate("/", { replace: true });
   };
 
+  const handleSelectCard = (nextIndex) => {
+    if (nextIndex === activeIndex) return;
+
+    const direction = nextIndex > activeIndex ? "card-forward" : "card-backward";
+    runWithTransition(() => {
+      setMessage("");
+      setActiveIndex(nextIndex);
+    }, direction);
+  };
+
   return (
     <div className="relative flex min-h-dvh flex-col">
       <GameBackground />
@@ -66,13 +77,13 @@ const FrontendTestReportPage = () => {
         FRONT TEST
       </div>
 
-      <div className="relative flex flex-1 flex-col gap-4 px-5 pb-40 pt-2">
+      <div className="relative flex flex-1 flex-col gap-4 px-5 pb-52 pt-2">
         <div className="flex items-center justify-center gap-2">
           {cards.map((card, index) => (
             <button
               key={card.roundId}
               type="button"
-              onClick={() => setActiveIndex(index)}
+              onClick={() => handleSelectCard(index)}
               className={[
                 "size-2 rounded-full",
                 index === activeIndex ? "bg-main-pink-1" : "bg-gray-800",
@@ -83,7 +94,10 @@ const FrontendTestReportPage = () => {
         </div>
 
         {cards.map((card, index) => (
-          <div key={card.roundId} className={index === activeIndex ? "block" : "hidden"}>
+          <div
+            key={card.roundId}
+            className={index === activeIndex ? "result-card-transition block" : "hidden"}
+          >
             <ReportCardView
               ref={(node) => {
                 refs.current[index] = node;
@@ -96,7 +110,7 @@ const FrontendTestReportPage = () => {
         ))}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 mx-auto flex w-full max-w-107.5 flex-col gap-2 px-5 pb-8 pt-3">
+      <div className="result-controls-transition fixed inset-x-0 bottom-0 z-40 mx-auto flex w-full max-w-[500px] flex-col gap-2 bg-[linear-gradient(to_top,#101012_0%,rgba(16,16,18,0.98)_68%,rgba(16,16,18,0)_100%)] px-5 pb-8 pt-14">
         {message && <p className="text-center text-caption1-2 text-main-pink-1">{message}</p>}
         <Button variant="pink" onClick={handleSave} loading={saving}>이미지 저장 테스트</Button>
         <Button variant="secondary" onClick={handleRestart}>처음부터 다시 테스트</Button>

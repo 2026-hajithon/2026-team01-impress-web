@@ -29,7 +29,7 @@ const ChoiceReportCard = ({
     <div className="flex flex-col gap-4 px-5">
       <div className="flex flex-col items-start gap-2">
         <img src={ResultCheckIcon} className="size-6" alt="" aria-hidden="true" />
-        <p className="whitespace-pre-wrap text-sub1-1 text-white">{question}</p>
+        <p className="text-wrap-words w-full text-left text-sub1-1 text-white">{question}</p>
       </div>
 
       <div className="relative flex flex-col gap-1.5 overflow-hidden rounded-[20px] bg-main-gradient p-[15px]">
@@ -46,15 +46,21 @@ const ChoiceReportCard = ({
           className="pointer-events-none absolute -bottom-7 -right-2 w-24 mix-blend-screen"
         />
         <p className="relative text-caption1-2 text-white/80">정답</p>
-        <p className="relative text-body1-1 text-white">{trueAnswer}</p>
+        <p
+          className={`text-wrap-words relative text-left text-body1-1 ${trueAnswer ? "text-white" : "text-white/70"}`}
+        >
+          {trueAnswer ?? "정답 정보를 확인할 수 없어요"}
+        </p>
       </div>
 
       {mostVotedOption !== undefined && (
         <div className="flex flex-col gap-1.5 rounded-[20px] bg-gray-950 p-[15px]">
           <p className="text-caption1-2 text-gray-500">가장 많은 선택을 받은 이미지</p>
           <div className="flex items-end justify-between">
-            <p className="text-body1-1 text-white">{mostVotedOption}</p>
-            <p className="text-body2-2 text-gray-300">
+            <p className="text-wrap-words min-w-0 flex-1 text-left text-body1-1 text-white">
+              {mostVotedOption}
+            </p>
+            <p className="shrink-0 text-body2-2 text-gray-300">
               {totalVotes}표 중 <span className="text-main-pink-1">{mostVotedCount}표</span>
             </p>
           </div>

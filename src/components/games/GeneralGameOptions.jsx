@@ -43,7 +43,7 @@ const GameOption = ({ name, onClick, isSelected, disabled }) => {
       aria-pressed={isSelected}
     >
       {isSelected && <SelectedDecoration />}
-      <span className="relative">{name}</span>
+      <span className="text-wrap-words relative max-w-full px-2 text-center">{name}</span>
     </button>
   );
 };

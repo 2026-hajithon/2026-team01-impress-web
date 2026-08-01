@@ -13,7 +13,7 @@ const FrontendTestWaitingPage = () => {
   };
 
   return (
-    <main className="relative mx-auto flex h-dvh w-full max-w-107.5 flex-col overflow-hidden bg-black">
+    <main className="relative mx-auto flex h-dvh w-full max-w-[500px] flex-col overflow-hidden bg-black">
       <GameBackground />
       <header className="relative px-5 pb-5 pt-12 text-center">
         <h1 className="text-head2-2 text-white">{session.roomName}</h1>

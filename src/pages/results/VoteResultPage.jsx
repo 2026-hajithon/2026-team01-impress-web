@@ -51,7 +51,7 @@ const VoteResultPage = ({ roomName, question, votes = [], voteUpdate, onNext, on
       <div className="flex flex-1 flex-col gap-8 px-5 pt-6 pb-32">
         <div className="flex flex-col items-start gap-3">
           <Chip prefix={"공통"} children={"질문"} />
-          <p className="whitespace-pre-wrap text-head2-1 text-white">{question}</p>
+          <p className="text-wrap-words w-full text-left text-head2-1 text-white">{question}</p>
         </div>
 
         <div className="flex flex-col gap-5">
@@ -72,7 +72,7 @@ const VoteResultPage = ({ roomName, question, votes = [], voteUpdate, onNext, on
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 mx-auto flex w-full max-w-107.5 flex-col gap-2 px-5 pt-3 pb-8">
+      <div className="fixed inset-x-0 bottom-0 mx-auto flex w-full max-w-[500px] flex-col gap-2 px-5 pt-3 pb-8">
         {voted && (
           <p className="text-center text-caption1-2 text-main-pink-1">
             *과반수가 참여할 때까지 잠시만 기다려주세요.

@@ -10,6 +10,7 @@ import { buildReportCards } from "@utils/reportCards";
 import Header from "@components/Header";
 import Button from "@components/Button";
 import OnboardingPage from "@pages/onboardings/OnboardingPage";
+import { runWithTransition } from "@utils/navigateWithTransition";
 
 const formatDate = (date = new Date()) =>
   `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(
@@ -40,39 +41,54 @@ const GameResultPage = () => {
   const cardRefs = useRef([]);
   const date = useMemo(() => formatDate(), []);
 
+  const showReport = (result, isMock) => {
+    const resultCards = buildReportCards(result);
+    const participantName = isMock
+      ? sessionStorage.getItem("hostName") ?? result.participants?.[0]?.name ?? ""
+      : result.participants?.find((participant) => participant.participantId === participantId)?.name ?? "";
+
+    runWithTransition(() => {
+      setCards(resultCards);
+      setMyName(participantName);
+      setMockMode(isMock);
+      setActiveIndex(0);
+      setPhase("report");
+    });
+  };
+
   const handleViewResult = async () => {
     setPhase("loading");
+    const minimumLoadingTime = wait(3000);
 
     if (forceMock) {
-      await wait(3000);
-      setCards(buildReportCards(MOCK_FINAL_RESULT));
-      setMyName(sessionStorage.getItem("hostName") ?? MOCK_FINAL_RESULT.participants[0]?.name ?? "");
-      setMockMode(true);
-      setPhase("report");
+      await minimumLoadingTime;
+      showReport(MOCK_FINAL_RESULT, true);
       return;
     }
 
     try {
       const result = await RoomAPI.getResult(roomCode, participantId);
-      setCards(buildReportCards(result));
-      setMyName(result.participants?.find((p) => p.participantId === participantId)?.name ?? "");
-      setMockMode(false);
+      await minimumLoadingTime;
+      showReport(result, false);
     } catch (error) {
       console.error(
         "%c[REST ✕] 결과지 조회 실패 — 더미 데이터로 대체합니다.",
         "color:#ff3b9b; font-weight:bold",
         error,
       );
-      setCards(buildReportCards(MOCK_FINAL_RESULT));
-      setMyName(
-        MOCK_FINAL_RESULT.participants.find((p) => p.participantId === participantId)?.name ??
-          MOCK_FINAL_RESULT.participants[0]?.name ??
-          "",
-      );
-      setMockMode(true);
+      await minimumLoadingTime;
+      showReport(MOCK_FINAL_RESULT, true);
     }
+  };
 
-    setPhase("report");
+  const handleSelectCard = (nextIndex) => {
+    if (nextIndex === activeIndex) return;
+
+    const direction = nextIndex > activeIndex ? "card-forward" : "card-backward";
+    runWithTransition(() => {
+      setSaveMessage("");
+      setActiveIndex(nextIndex);
+    }, direction);
   };
 
   const handleSaveImage = async () => {
@@ -134,14 +150,14 @@ const GameResultPage = () => {
         </div>
       )}
 
-      <div className="flex flex-1 flex-col gap-4 px-5 pt-2 pb-40">
+      <div className="flex flex-1 flex-col gap-4 px-5 pt-2 pb-52">
         {cards.length > 1 && (
           <div className="flex items-center justify-center gap-2">
             {cards.map((card, index) => (
               <button
                 key={card.roundId}
                 type="button"
-                onClick={() => setActiveIndex(index)}
+                onClick={() => handleSelectCard(index)}
                 className={[
                   "size-2 rounded-full transition-colors",
                   index === activeIndex ? "bg-main-pink-1" : "bg-gray-800",
@@ -153,7 +169,10 @@ const GameResultPage = () => {
         )}
 
         {cards.map((card, index) => (
-          <div key={card.roundId} className={index === activeIndex ? "block" : "hidden"}>
+          <div
+            key={card.roundId}
+            className={index === activeIndex ? "result-card-transition block" : "hidden"}
+          >
             <ReportCardView
               ref={(node) => {
                 cardRefs.current[index] = node;
@@ -166,7 +185,7 @@ const GameResultPage = () => {
         ))}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 mx-auto flex w-full max-w-107.5 flex-col gap-2.5 px-5 pt-3 pb-8">
+      <div className="result-controls-transition fixed inset-x-0 bottom-0 z-40 mx-auto flex w-full max-w-[500px] flex-col gap-2.5 bg-[linear-gradient(to_top,#101012_0%,rgba(16,16,18,0.98)_68%,rgba(16,16,18,0)_100%)] px-5 pt-14 pb-8">
         {saveMessage && (
           <p className="text-center text-caption1-2 text-main-pink-1" aria-live="polite">
             {saveMessage}

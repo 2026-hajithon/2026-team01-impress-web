@@ -27,10 +27,10 @@ const EnterLeaderNamePage = () => {
   };
 
   return (
-    <main className="min-h-dvh bg-white">
+    <main className="min-h-dvh bg-gray-950">
       <section
         className={[
-          "relative isolate mx-auto flex min-h-dvh w-full max-w-[430px]",
+          "relative isolate mx-auto flex min-h-dvh w-full max-w-[500px]",
           "flex-col bg-black",
         ].join(" ")}
       >

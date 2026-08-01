@@ -15,7 +15,7 @@ const Divider = () => (
 const InfoRow = ({ label, value }) => (
   <div className="flex w-full items-center gap-3">
     <p className="w-12.5 shrink-0 text-body2-2 text-gray-500">{label}</p>
-    <p className="min-w-0 flex-1 truncate text-body2-1 text-white">{value}</p>
+    <p className="text-wrap-words min-w-0 flex-1 text-left text-body2-1 text-white">{value}</p>
   </div>
 );
 

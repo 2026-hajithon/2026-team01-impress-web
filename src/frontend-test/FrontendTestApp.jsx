@@ -85,9 +85,9 @@ const FrontendTestApp = () => {
   );
 
   return (
-    <div className="min-h-dvh bg-[#e4e6ea]">
+    <div className="min-h-dvh bg-gray-950">
       <div
-        className="relative mx-auto min-h-dvh w-full max-w-107.5 overflow-x-hidden bg-black shadow-[0_0_36px_rgba(15,17,22,0.16)]"
+        className="relative mx-auto min-h-dvh w-full max-w-[500px] overflow-x-hidden bg-black shadow-[0_0_36px_rgba(15,17,22,0.16)]"
         data-testid="frontend-test-shell"
       >
         <FrontendTestContext.Provider value={value}>

@@ -7,6 +7,13 @@ export const ACCURACY_TIER = Object.freeze({
   HIGH: "HIGH",
 });
 
+// JSON 응답에서 같은 ID가 숫자/문자열로 섞여 와도 동일한 선지로 취급한다.
+export const isSameOptionId = (left, right) =>
+  left != null && right != null && String(left) === String(right);
+
+const getOptionId = (option) => option?.optionId ?? option?.id;
+const getOptionContent = (option) => option?.content ?? option?.optionContent ?? option?.text;
+
 // 개인 객관식은 문제 당사자를 제외한 답변 가능 인원을 3등분한다.
 // 예: 답변 가능 7명 -> 0~2 LOW, 3~4 MIDDLE, 5~7 HIGH.
 export const getAccuracyTier = (correctCount, eligibleAnswerCount) => {
@@ -36,12 +43,21 @@ export const buildReportCards = (result) => {
       const roundResult = round.result ?? {};
       const optionResults = roundResult.optionResults ?? [];
       const totalCount = optionResults.reduce((sum, option) => sum + (option.count ?? 0), 0);
+      const targetAnswerOptionId =
+        roundResult.targetAnswerOptionId ??
+        roundResult.correctOptionId ??
+        roundResult.answerOptionId;
       const trueAnswerOption = optionResults.find(
-        (option) => option.optionId === roundResult.targetAnswerOptionId,
+        (option) => isSameOptionId(getOptionId(option), targetAnswerOptionId),
       );
+      const mostSelectedOptionIds = roundResult.mostSelectedOptionIds ?? [];
       const mostVotedOption = optionResults.find((option) =>
-        (roundResult.mostSelectedOptionIds ?? []).includes(option.optionId),
+        mostSelectedOptionIds.some((id) => isSameOptionId(id, getOptionId(option))),
       );
+      const trueAnswer =
+        getOptionContent(trueAnswerOption) ??
+        roundResult.targetAnswerOptionContent ??
+        roundResult.correctAnswer;
 
       return {
         roundId: round.roundId,
@@ -49,8 +65,8 @@ export const buildReportCards = (result) => {
         targetName: round.targetName,
         question: round.question,
         answers: roundResult.answers,
-        trueAnswer: trueAnswerOption?.content,
-        mostVotedOption: mostVotedOption?.content,
+        trueAnswer,
+        mostVotedOption: getOptionContent(mostVotedOption),
         mostVotedCount: mostVotedOption?.count,
         totalOptionVotes: totalCount,
         // 객관식 당사자의 선택은 정답을 결정하기 위해 필요하지만 정답자 수에는 포함하지 않는다.
