@@ -14,6 +14,13 @@ const Q_TYPE = {
   COMMON_VOTE: "COMMON_VOTE",
 };
 
+// 개발 환경에서 목 데이터로 대체 중일 때 화면 우측 상단에 띄우는 표시.
+const MockModeBadge = () => (
+  <div className="pointer-events-none fixed right-3 top-14.5 z-50 rounded-full bg-main-pink px-2.5 py-1 text-caption1-1 text-white shadow-lg">
+    MOCK
+  </div>
+);
+
 // 라운드 데이터를 소켓에서 받아 qType에 맞는 게임 화면(답변 중 / 결과)으로 분기한다.
 const GameRoundPage = () => {
   const { roomCode } = useParams();
@@ -22,7 +29,7 @@ const GameRoundPage = () => {
   const participantId = Number(sessionStorage.getItem("participantId"));
   const roomName = sessionStorage.getItem("roomName") ?? "";
 
-  const { participants, round, roundResult, voteUpdate, gameEnded, kicked, actions } =
+  const { participants, round, roundResult, voteUpdate, gameEnded, kicked, mockMode, actions } =
     useRoomSocket({ roomCode, participantId });
 
   const [timeLeft, setTimeLeft] = useState(0);
@@ -72,36 +79,34 @@ const GameRoundPage = () => {
 
   const isShowingResult = roundResult?.roundId === round.roundId;
 
-  if (isShowingResult) {
-    if (round.qType === Q_TYPE.BLANK) {
-      return (
-        <AnswerResultPage
-          roomName={roomName}
-          targetName={target?.name}
-          question={round.question}
-          answers={roundResult.result?.answers ?? []}
-          voteUpdate={voteUpdate}
-          onNext={handleNext}
-        />
-      );
-    }
+  let content;
 
-    if (round.qType === Q_TYPE.INDIVIDUAL_OX) {
-      return (
-        <ChoiceResultPage
-          roomName={roomName}
-          targetName={target?.name}
-          question={round.question}
-          options={round.options ?? ["O", "X"]}
-          counts={roundResult.result?.optionCounts ?? {}}
-          trueAnswer={roundResult.result?.trueAnswer}
-          myAnswer={lastAnswer}
-          voteUpdate={voteUpdate}
-          onNext={handleNext}
-        />
-      );
-    }
-
+  if (isShowingResult && round.qType === Q_TYPE.BLANK) {
+    content = (
+      <AnswerResultPage
+        roomName={roomName}
+        targetName={target?.name}
+        question={round.question}
+        answers={roundResult.result?.answers ?? []}
+        voteUpdate={voteUpdate}
+        onNext={handleNext}
+      />
+    );
+  } else if (isShowingResult && round.qType === Q_TYPE.INDIVIDUAL_OX) {
+    content = (
+      <ChoiceResultPage
+        roomName={roomName}
+        targetName={target?.name}
+        question={round.question}
+        options={round.options ?? ["O", "X"]}
+        counts={roundResult.result?.optionCounts ?? {}}
+        trueAnswer={roundResult.result?.trueAnswer}
+        myAnswer={lastAnswer}
+        voteUpdate={voteUpdate}
+        onNext={handleNext}
+      />
+    );
+  } else if (isShowingResult) {
     const ranking = (
       roundResult.result?.ranking ??
       participants.map((p) => ({ participantId: p.participantId, name: p.name, votes: 0 }))
@@ -109,7 +114,7 @@ const GameRoundPage = () => {
       .slice()
       .sort((a, b) => b.votes - a.votes);
 
-    return (
+    content = (
       <VoteResultPage
         roomName={roomName}
         question={round.question}
@@ -118,40 +123,45 @@ const GameRoundPage = () => {
         onNext={handleNext}
       />
     );
-  }
+  } else {
+    const commonProps = { roomName, timeLeft, submitted };
 
-  const commonProps = { roomName, timeLeft, submitted };
-
-  if (round.qType === Q_TYPE.BLANK) {
-    return (
-      <PersonalAnswerGamePage
-        {...commonProps}
-        targetName={target?.name}
-        question={round.question}
-        onSubmit={(textAnswer) => handleSubmit({ textAnswer })}
-      />
-    );
-  }
-
-  if (round.qType === Q_TYPE.INDIVIDUAL_OX) {
-    return (
-      <PersonalChoiceGamePage
-        {...commonProps}
-        targetName={target?.name}
-        question={round.question}
-        options={round.options ?? ["O", "X"]}
-        onSubmit={(choiceAnswer) => handleSubmit({ choiceAnswer })}
-      />
-    );
+    if (round.qType === Q_TYPE.BLANK) {
+      content = (
+        <PersonalAnswerGamePage
+          {...commonProps}
+          targetName={target?.name}
+          question={round.question}
+          onSubmit={(textAnswer) => handleSubmit({ textAnswer })}
+        />
+      );
+    } else if (round.qType === Q_TYPE.INDIVIDUAL_OX) {
+      content = (
+        <PersonalChoiceGamePage
+          {...commonProps}
+          targetName={target?.name}
+          question={round.question}
+          options={round.options ?? ["O", "X"]}
+          onSubmit={(choiceAnswer) => handleSubmit({ choiceAnswer })}
+        />
+      );
+    } else {
+      content = (
+        <GeneralChoiceGamePage
+          {...commonProps}
+          question={round.question}
+          participants={participants}
+          onSubmit={(pickedParticipantId) => handleSubmit({ pickedParticipantId })}
+        />
+      );
+    }
   }
 
   return (
-    <GeneralChoiceGamePage
-      {...commonProps}
-      question={round.question}
-      participants={participants}
-      onSubmit={(pickedParticipantId) => handleSubmit({ pickedParticipantId })}
-    />
+    <>
+      {mockMode && <MockModeBadge />}
+      {content}
+    </>
   );
 };
 

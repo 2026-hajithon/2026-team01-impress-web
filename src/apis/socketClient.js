@@ -52,10 +52,9 @@ class SocketClient {
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
 
-      // 개발할 때만 STOMP 로그 확인
-      debug: import.meta.env.DEV
-        ? (message) => console.log("[STOMP]", message)
-        : undefined,
+      // 저수준 STOMP 프레임 로그는 매우 시끄러워서 기본적으로 꺼둔다.
+      // 필요할 때만 아래 줄 주석을 풀어서 확인한다.
+      // debug: import.meta.env.DEV ? (message) => console.log("[STOMP]", message) : undefined,
     });
 
     // 최초 연결과 재연결 직전에 참가자 식별 헤더 설정
@@ -90,16 +89,25 @@ class SocketClient {
       }
     };
 
-    client.onWebSocketError = (error) => {
-      console.error("[WebSocket error]", error);
+    client.onWebSocketError = () => {
+      console.error(
+        `%c[WS ✕] 연결 실패 — 서버(${BROKER_URL})에 연결할 수 없어요`,
+        "color:#ff3b9b; font-weight:bold",
+      );
       this.setStatus(SOCKET_STATUS.ERROR);
     };
 
     client.onStompError = (frame) => {
-      console.error("[STOMP error]", {
-        headers: frame.headers,
-        body: frame.body,
-      });
+      console.error(
+        `%c[WS ✕ STOMP] ${frame.headers?.message ?? "알 수 없는 오류"}`,
+        "color:#ff3b9b; font-weight:bold",
+      );
+
+      if (import.meta.env.DEV && frame.body) {
+        console.groupCollapsed("[WS ✕ STOMP] 상세");
+        console.log(frame.body);
+        console.groupEnd();
+      }
 
       this.setStatus(SOCKET_STATUS.ERROR);
     };
@@ -209,10 +217,10 @@ class SocketClient {
         listener(event);
       });
     } catch (error) {
-      console.error("[Invalid socket event]", {
-        body,
-        error,
-      });
+      console.error(`%c[WS ✕] 이벤트 파싱 실패 — ${error.message}`, "color:#ff3b9b; font-weight:bold");
+      console.groupCollapsed("[WS ✕] 원본 메시지");
+      console.log(body);
+      console.groupEnd();
     }
   }
 
