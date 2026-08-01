@@ -27,7 +27,10 @@ const EnterMemberNamePage = () => {
     setErrorMessage("");
 
     try {
-      const { participantId, role } = await RoomAPI.joinRoom(roomCode, trimmedName);
+      const { participantId, role } = await RoomAPI.joinRoom(
+        roomCode,
+        trimmedName,
+      );
 
       sessionStorage.setItem("hostName", trimmedName);
       sessionStorage.setItem("roomCode", roomCode);
@@ -38,7 +41,11 @@ const EnterMemberNamePage = () => {
 
       navigate(`/rooms/${roomCode}/waiting`);
     } catch (error) {
-      console.error("%c[REST ✕] 방 참여 실패", "color:#ff3b9b; font-weight:bold", error);
+      console.error(
+        "%c[REST ✕] 방 참여 실패",
+        "color:#ff3b9b; font-weight:bold",
+        error,
+      );
       setErrorMessage("방 참여에 실패했어요. 입장 코드를 다시 확인해주세요.");
     } finally {
       setIsJoining(false);
@@ -54,11 +61,7 @@ const EnterMemberNamePage = () => {
         ].join(" ")}
       >
         <div className="flex flex-col gap-1.5 p-5 pt-12">
-          <img
-            src={CreateRoomGraphic}
-            alt=""
-            className="size-[70px]"
-          />
+          <img src={CreateRoomGraphic} alt="" className="size-[70px]" />
 
           <h1 className="text-head2-1 text-white">
             모임방에 입장하기 전,
@@ -73,14 +76,17 @@ const EnterMemberNamePage = () => {
             onChange={(event) => setMemberName(event.target.value)}
             placeholder="이름을 입력하세요"
             maxLength={20}
-            message="*최대 20자까지 입력할 수 있어요"
+            message={errorMessage || "*최대 20자까지 입력할 수 있어요"}
             autoComplete="name"
           />
         </div>
 
         <div className="mt-auto flex flex-col gap-2 px-5 pb-8 pt-3">
           {errorMessage && (
-            <p className="text-center text-caption1-2 text-main-pink-1" aria-live="polite">
+            <p
+              className="text-center text-caption1-2 text-main-pink-1"
+              aria-live="polite"
+            >
               {errorMessage}
             </p>
           )}
