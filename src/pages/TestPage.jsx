@@ -43,6 +43,12 @@ const TestPage = () => {
         >
           게임 종료 화면부터 보기
         </Link>
+        <Link
+          to="/countdown"
+          className="flex h-14 w-full items-center justify-center rounded-xl bg-main-blue text-body1-2 text-white"
+        >
+          카운트다운 화면 보기
+        </Link>
       </div>
 
       <div className="flex flex-col gap-8 px-5 pb-5">
