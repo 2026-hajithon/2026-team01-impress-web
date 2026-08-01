@@ -1,7 +1,7 @@
-const GameOption = (name, idx) => {
+const GameOption = ({ name, idx }) => {
   return (
     <div
-      className="w-full h-28.5 rounded-[20px] bg-gray-950 text-white"
+      className="w-full h-28.5 rounded-[20px] bg-gray-950 text-white text-head2-2 content-center text-center"
       key={idx}
     >
       {name}
@@ -9,19 +9,20 @@ const GameOption = (name, idx) => {
   );
 };
 
+const PARTICIPANT_LIST = [
+  { name: "이혁" },
+  { name: "이혁" },
+  { name: "이혁" },
+  { name: "이혁" },
+  { name: "이혁" },
+  { name: "이혁" },
+  { name: "이혁" },
+  { name: "이혁" },
+];
+
 const GeneralGameOptions = (/*participantList*/) => {
-  const PARTICIPANT_LIST = [
-    { name: "이혁" },
-    { name: "이혁" },
-    { name: "이혁" },
-    { name: "이혁" },
-    { name: "이혁" },
-    { name: "이혁" },
-    { name: "이혁" },
-    { name: "이혁" },
-  ];
   return (
-    <div className="flex">
+    <div className="flex w-full px-5 gap-3">
       {PARTICIPANT_LIST.map((participant, idx) => {
         return <GameOption name={participant.name} key={idx}></GameOption>;
       })}
