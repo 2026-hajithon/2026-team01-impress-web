@@ -1,9 +1,16 @@
 import { forwardRef } from "react";
 import ResultLogo from "@assets/Result/ResultLogo.svg";
 import ResultFooterMark from "@assets/Result/ResultFooterMark.svg";
-import BackgroundGlow from "@assets/Background/BackgroundGraphic0.svg";
 
-const Divider = () => <div className="w-full border-t border-dashed border-gray-800" />;
+const Divider = () => (
+  <div
+    className="h-0.5 w-full text-gray-800"
+    style={{
+      backgroundImage:
+        "repeating-linear-gradient(to right, currentColor 0 8px, transparent 8px 14px)",
+    }}
+  />
+);
 
 const InfoRow = ({ label, value }) => (
   <div className="flex w-full items-center gap-3">
@@ -16,11 +23,13 @@ const InfoRow = ({ label, value }) => (
 // 캡처(html-to-image)를 위해 ref를 그대로 카드 루트 DOM에 꽂는다.
 const ResultCard = forwardRef(({ roomName, participantName, date, children }, ref) => (
   <div ref={ref} className="relative w-full overflow-hidden rounded-[30px] bg-black">
-    <img
-      src={BackgroundGlow}
-      alt=""
+    <div
       aria-hidden="true"
-      className="pointer-events-none absolute bottom-[-140px] left-1/2 w-[900px] max-w-none -translate-x-1/2"
+      className="pointer-events-none absolute inset-0"
+      style={{
+        background:
+          "radial-gradient(ellipse 110% 30% at 50% 100%, rgba(255, 59, 155, 0.16) 0%, rgba(255, 59, 155, 0) 76%), linear-gradient(to bottom, #101012 0%, #101012 60%, #151B2F 72%, #202943 84%, #38273D 100%)",
+      }}
     />
     <div className="relative flex flex-col gap-8 pb-8">
       <div className="flex items-center justify-center py-5">

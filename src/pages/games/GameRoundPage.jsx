@@ -15,6 +15,11 @@ const Q_TYPE = {
   COMMON_VOTE: "COMMON_VOTE",
 };
 
+// round.timeRemaining은 RoomAPI.syncStatus 응답에만 문서화돼 있고, ROUND_START 소켓 이벤트
+// payload에도 항상 포함되는지는 백엔드 스펙에 명시돼 있지 않다. 값이 없어도(undefined)
+// 타이머가 0에 멈춰 보이지 않도록 기본 라운드 시간(mock 데이터와 동일한 60초)으로 대체한다.
+const DEFAULT_ROUND_DURATION = 60;
+
 // 개발 환경에서 목 데이터로 대체 중일 때 화면 우측 상단에 띄우는 표시.
 const MockModeBadge = () => (
   <div className="pointer-events-none fixed right-3 top-14.5 z-50 rounded-full bg-main-pink px-2.5 py-1 text-caption1-1 text-white shadow-lg">
@@ -47,7 +52,7 @@ const GameRoundPage = () => {
   const [syncedRoundId, setSyncedRoundId] = useState(null);
   if (round && round.roundId !== syncedRoundId) {
     setSyncedRoundId(round.roundId);
-    setTimeLeft(round.timeRemaining ?? 0);
+    setTimeLeft(round.timeRemaining ?? DEFAULT_ROUND_DURATION);
     setSubmitted(Boolean(round.myAnswerSubmitted));
     setLastAnswer(null);
   }

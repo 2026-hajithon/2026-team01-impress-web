@@ -9,6 +9,7 @@ import GameResultPage from "@pages/results/GameResultPage";
 import CountdownPage from "@pages/games/CountdownPage";
 import TestPage from "@pages/TestPage";
 import TestCasePage from "@pages/TestCasePage";
+import ApiConnectionTestPage from "@pages/ApiConnectionTestPage";
 import OnboardingPage from "@pages/onboardings/OnboardingPage";
 
 const App = () => {
@@ -24,6 +25,7 @@ const App = () => {
         <Route element={<Layout />}>
           <Route path="/test" element={<TestPage />} />
           <Route path="/test/case/:caseId" element={<TestCasePage />} />
+          <Route path="/test/api" element={<ApiConnectionTestPage />} />
         </Route>
         <Route path="/onboarding" element={<OnboardingPage />} />
       </Routes>

@@ -2,6 +2,8 @@ import ResultCheckIcon from "@assets/Result/ResultCheckIcon.svg";
 import OptionCorrect from "@assets/Result/ResultType/OptionCorrect.svg";
 import OptionMiddle from "@assets/Result/ResultType/OptionMiddle.svg";
 import OptionIncorrect from "@assets/Result/ResultType/OptionIncorrect.svg";
+import CorrectOptionStarLarge from "@assets/Game/Option/GeneralOptionStar1.svg";
+import CorrectOptionStarSmall from "@assets/Game/Option/GeneralOptionStar2.svg";
 
 // 정답률 3단계 (Figma 282:5171). rate = 정답자 수 / 전체 응답자 수.
 const getAccuracyTierImage = (rate) => {
@@ -30,9 +32,21 @@ const ChoiceReportCard = ({
         <p className="whitespace-pre-wrap text-sub1-1 text-white">{question}</p>
       </div>
 
-      <div className="flex flex-col gap-1.5 rounded-[20px] bg-main-gradient p-[15px]">
-        <p className="text-caption1-2 text-white/80">정답</p>
-        <p className="text-body1-1 text-white">{trueAnswer}</p>
+      <div className="relative flex flex-col gap-1.5 overflow-hidden rounded-[20px] bg-main-gradient p-[15px]">
+        <img
+          src={CorrectOptionStarSmall}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute right-24 top-3 w-6 mix-blend-screen"
+        />
+        <img
+          src={CorrectOptionStarLarge}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-7 -right-2 w-24 mix-blend-screen"
+        />
+        <p className="relative text-caption1-2 text-white/80">정답</p>
+        <p className="relative text-body1-1 text-white">{trueAnswer}</p>
       </div>
 
       {mostVotedOption !== undefined && (

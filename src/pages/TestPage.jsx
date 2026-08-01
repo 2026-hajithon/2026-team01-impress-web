@@ -20,6 +20,19 @@ const TestPage = () => {
       </div>
 
       <div className="flex flex-col gap-2">
+        <p className="text-body1-1 text-white">백엔드 연결 확인</p>
+        <p className="text-caption1-2 text-gray-500">
+          방 생성/참여/동기화/결과조회/나가기 REST API를 실제 서버에 직접 쏴볼 수 있어요.
+        </p>
+        <Link
+          to="/test/api"
+          className="flex h-14 items-center justify-center rounded-xl bg-main-blue text-body1-2 text-white"
+        >
+          REST API 연결 테스트
+        </Link>
+      </div>
+
+      <div className="flex flex-col gap-2">
         <p className="text-body1-1 text-white">게임 종료 이후 전체 흐름</p>
         <p className="text-caption1-2 text-gray-500">
           결과지 보기 → 이미지 저장 → 대기 화면 복귀 버튼까지 확인할 수 있어요.
