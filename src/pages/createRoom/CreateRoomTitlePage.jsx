@@ -7,29 +7,46 @@ import Modal from "@components/Modal";
 import createRoomGraphic from "@assets/Room/CreateRoom2.svg";
 import Button from "@components/Button";
 import TextField from "@components/TextField";
+import { RoomAPI } from "@apis/RoomAPI";
 
 const CreateRoomTitlePage = () => {
   const [roomName, setRoomName] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [createdRoomCode, setCreatedRoomCode] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleCreateRoom = () => {
-    if (!roomName.trim()) return;
+  const handleCreateRoom = async () => {
+    if (!roomName.trim() || isCreating) return;
 
     const hostName = location.state?.hostName ?? sessionStorage.getItem("hostName") ?? "방장";
-    const roomCode = String(Math.floor(1000 + Math.random() * 9000));
+    const trimmedRoomName = roomName.trim();
 
-    sessionStorage.setItem("hostName", hostName);
-    sessionStorage.setItem("roomName", roomName.trim());
-    sessionStorage.setItem("roomCode", roomCode);
-    sessionStorage.setItem("participantId", "1");
-    sessionStorage.setItem("role", "HOST");
-    sessionStorage.setItem("gameMode", "mock");
-    setCreatedRoomCode(roomCode);
-    setIsModalOpen(true);
+    setIsCreating(true);
+    setErrorMessage("");
+
+    try {
+      const { roomCode, participantId, role } = await RoomAPI.createRoom(hostName, trimmedRoomName);
+
+      sessionStorage.setItem("hostName", hostName);
+      sessionStorage.setItem("roomName", trimmedRoomName);
+      sessionStorage.setItem("roomCode", roomCode);
+      sessionStorage.setItem("participantId", String(participantId));
+      sessionStorage.setItem("role", role);
+      sessionStorage.removeItem("gameMode");
+      sessionStorage.removeItem("mockParticipants");
+
+      setCreatedRoomCode(roomCode);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("%c[REST ✕] 방 생성 실패", "color:#ff3b9b; font-weight:bold", error);
+      setErrorMessage("방 생성에 실패했어요. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleCloseModal = () => {
@@ -81,10 +98,16 @@ const CreateRoomTitlePage = () => {
         </div>
 
         <div className="relative z-10 mt-auto flex flex-col gap-2 px-5 pb-8 pt-2">
+          {errorMessage && (
+            <p className="text-center text-caption1-2 text-main-pink-1" aria-live="polite">
+              {errorMessage}
+            </p>
+          )}
           <Button
             variant="primary"
             onClick={handleCreateRoom}
-            disabled={!roomName.trim()}
+            disabled={!roomName.trim() || isCreating}
+            loading={isCreating}
           >
             방 만들기
           </Button>

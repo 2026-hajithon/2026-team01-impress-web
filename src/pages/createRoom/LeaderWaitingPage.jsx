@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import deleteIcon from "@assets/Room/Delete.svg";
@@ -6,74 +6,45 @@ import leaveRoomIcon from "@assets/Room/LeaveRoom.svg";
 import roomLeaderIcon from "@assets/Room/RoomLeader.svg";
 import shareIcon from "@assets/Room/Share.svg";
 import Button from "@components/Button";
+import { RoomAPI } from "@apis/RoomAPI";
+import { socketClient } from "@apis/socketClient";
+import { useRoomSocket } from "@hooks/useRoomSocket";
 
 import KickMemberModal from "./components/KickMemberModal";
 import LeaderLeaveModal from "./components/LeaderLeaveModal";
 import ShareRoomModal from "./components/ShareRoomModal";
 
-const initialParticipants = [
-  {
-    participantId: 1,
-    name: "김태현",
-    role: "HOST",
-  },
-  {
-    participantId: 2,
-    name: "김가빈",
-    role: "GUEST",
-  },
-  {
-    participantId: 3,
-    name: "김수현",
-    role: "GUEST",
-  },
-  {
-    participantId: 4,
-    name: "윤소연",
-    role: "GUEST",
-  },
-  {
-    participantId: 5,
-    name: "이혁",
-    role: "GUEST",
-  },
-  {
-    participantId: 6,
-    name: "유영주",
-    role: "GUEST",
-  },
-  {
-    participantId: 7,
-    name: "김이픈",
-    role: "GUEST",
-  },
-  {
-    participantId: 8,
-    name: "최두지",
-    role: "GUEST",
-  },
-];
+const clearRoomSession = () => {
+  ["hostName", "roomName", "roomCode", "participantId", "role", "gameMode", "mockParticipants"].forEach(
+    (key) => sessionStorage.removeItem(key),
+  );
+};
 
 const HostWaitingRoomPage = () => {
   const navigate = useNavigate();
   const { roomCode: routeRoomCode } = useParams();
-  const [participants] = useState(() => {
-    const hostName = sessionStorage.getItem("hostName");
 
-    if (!hostName) return initialParticipants;
+  const roomName = sessionStorage.getItem("roomName") || "하지톤 1팀";
+  const roomCode = routeRoomCode || sessionStorage.getItem("roomCode") || "0801";
+  const participantId = Number(sessionStorage.getItem("participantId"));
 
-    return initialParticipants.map((participant) =>
-      participant.role === "HOST" ? { ...participant, name: hostName } : participant,
-    );
-  });
+  const { participants, round, kicked, actions } = useRoomSocket({ roomCode, participantId });
+
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  const roomName =
-  sessionStorage.getItem("roomName") || "하지톤 1팀";
+  // 방장이 강퇴당하는 경우는 없지만, 참가자 전용 컴포넌트를 공유하는 useRoomSocket 계약을 그대로 따른다.
+  useEffect(() => {
+    if (!kicked) return;
+    clearRoomSession();
+    navigate("/start", { replace: true });
+  }, [kicked, navigate]);
 
-  const roomCode = routeRoomCode || sessionStorage.getItem("roomCode") || "0801";
+  // "게임 시작하기" 클릭 자체가 아니라, 서버가 실제로 ROUND_START를 방송한 뒤에만 다음 화면으로 넘어간다.
+  useEffect(() => {
+    if (round) navigate(`/rooms/${roomCode}/countdown`);
+  }, [round, roomCode, navigate]);
 
   const handleShare = () => {
     setIsShareModalOpen(true);
@@ -83,7 +54,7 @@ const HostWaitingRoomPage = () => {
     setIsShareModalOpen(false);
   };
 
-  const handleLeave = () => {   
+  const handleLeave = () => {
     setIsLeaveModalOpen(true);
   };
 
@@ -91,12 +62,18 @@ const HostWaitingRoomPage = () => {
     setIsLeaveModalOpen(false);
   };
 
-  const handleConfirmLeave = () => {
+  const handleConfirmLeave = async () => {
     setIsLeaveModalOpen(false);
-    ["hostName", "roomName", "roomCode", "participantId", "role", "gameMode", "mockParticipants"].forEach(
-      (key) => sessionStorage.removeItem(key),
-    );
-    navigate("/start", { replace: true });
+
+    try {
+      await RoomAPI.leaveRoom(roomCode, participantId);
+    } catch (error) {
+      console.error("%c[REST ✕] 방 나가기 실패", "color:#ff3b9b; font-weight:bold", error);
+    } finally {
+      socketClient.disconnect();
+      clearRoomSession();
+      navigate("/start", { replace: true });
+    }
   };
 
   const handleKick = (participant) => {
@@ -108,15 +85,12 @@ const HostWaitingRoomPage = () => {
   };
 
   const handleConfirmKick = () => {
-    // 추후 강퇴 WebSocket 연결
+    if (selectedParticipant) actions.kick(selectedParticipant.participantId);
     setSelectedParticipant(null);
   };
 
   const handleStartGame = () => {
-    sessionStorage.setItem("roomCode", roomCode);
-    sessionStorage.setItem("gameMode", "mock");
-    sessionStorage.setItem("mockParticipants", JSON.stringify(participants));
-    navigate(`/rooms/${roomCode}/countdown`);
+    actions.start();
   };
 
   return (
