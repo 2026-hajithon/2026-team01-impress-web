@@ -34,7 +34,10 @@ const ChoiceResultPage = ({
 }) => {
   const [voted, setVoted] = useState(false);
   const sortedOptions = [...optionResults].sort((a, b) => a.displayOrder - b.displayOrder);
-  const isCorrect = mySelectedOptionId !== undefined && mySelectedOptionId === targetAnswerOptionId;
+  // sync/재접속 시 답변을 안 했다면 서버가 null을 내려주므로(스펙 2.3-B), undefined만 걸러내면
+  // "제출 안 함"인 사람도 오답 아이콘이 떠버린다. null과 undefined 둘 다 "미제출"로 취급한다.
+  const hasMyAnswer = mySelectedOptionId != null;
+  const isCorrect = hasMyAnswer && mySelectedOptionId === targetAnswerOptionId;
 
   const handleNext = () => {
     setVoted(true);
@@ -51,7 +54,7 @@ const ChoiceResultPage = ({
           <p className="whitespace-pre-wrap text-head2-1 text-white">{question}</p>
         </div>
 
-        {mySelectedOptionId !== undefined && (
+        {hasMyAnswer && (
           <img src={isCorrect ? CorrectIcon : IncorrectIcon} className="size-12" />
         )}
 

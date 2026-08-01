@@ -91,7 +91,13 @@ const OnboardingPage = () => {
         </div>
       )}
 
-      <div key={revision} className="onboarding-slide-enter absolute inset-0 z-20">
+      <div
+        key={revision}
+        className={[
+          "absolute inset-0 z-20",
+          revision > 0 ? "onboarding-slide-enter" : "",
+        ].join(" ")}
+      >
         <CurrentSlide />
       </div>
     </div>

@@ -9,8 +9,6 @@ import {
 } from "../apis/mockData";
 import { RoomAPI } from "../apis/RoomAPI";
 
-// 개발 환경에서 이 시간(ms) 안에 웹소켓이 연결되지 않으면, 백엔드가 없다고 보고 목 데이터로 전환한다.
-const MOCK_FALLBACK_DELAY_MS = 4000;
 // 목 모드에서 제출/다음 라운드 진행이 실제 서버처럼 느껴지도록 흉내내는 지연 시간.
 const MOCK_ACTION_DELAY_MS = 500;
 
@@ -77,14 +75,8 @@ export function useRoomSocket({
   const [error, setError] = useState(null);
   const [mockMode, setMockMode] = useState(false);
 
-  // setTimeout 콜백 안에서 최신 status를 읽기 위한 ref (effect 클로저는 마운트 시점 값을 들고 있으므로).
-  const statusRef = useRef(status);
   const mockIndexRef = useRef(0);
   const mockRoundsRef = useRef([]);
-
-  useEffect(() => {
-    statusRef.current = status;
-  }, [status]);
 
   useEffect(() => {
     if (!roomCode || !participantId) {
@@ -114,61 +106,52 @@ export function useRoomSocket({
       return undefined;
     }
 
+    const applySyncedState = (state) => {
+      if (state.participants) {
+        setParticipants(state.participants);
+      }
+
+      if (state.roomStatus === "FINISHED") {
+        setGameEnded(true);
+        return;
+      }
+
+      if (!state.currentRound) return;
+
+      if (state.currentRound.phase === "RESULT") {
+        setRound(state.currentRound);
+        setRoundResult(state.currentRound);
+        setVoteUpdate({
+          votedCount: state.currentRound.nextVoteCount,
+          requiredCount: state.currentRound.nextVoteRequired,
+        });
+      } else {
+        setRound(state.currentRound);
+        setRoundResult(null);
+        setVoteUpdate(null);
+      }
+    };
+
+    const syncRoomState = () =>
+      RoomAPI.syncStatus(roomCode, participantId)
+        .then(applySyncedState)
+        .catch((syncError) => {
+          console.error("[REST] 상태 동기화(syncStatus) 실패", syncError);
+        });
+
+    // 참가자 목록은 WebSocket 연결 성공을 기다리지 않고 먼저 복구한다.
+    // 생성 직후 방장도 이 응답에 포함되므로 대기방이 빈 목록으로 남지 않는다.
+    syncRoomState();
+
     socketClient.connect({ roomCode, participantId });
 
     const unsubStatus = socketClient.onStatusChange(setStatus);
-
-    // 개발 환경 전용: 일정 시간 안에 연결되지 않으면 실제 서버 없이도 화면을 확인할 수 있도록 목 데이터로 전환한다.
-    let mockFallbackTimer;
-    if (import.meta.env.DEV) {
-      mockFallbackTimer = setTimeout(() => {
-        if (statusRef.current === SOCKET_STATUS.CONNECTED) return;
-
-        console.warn(
-          "%c[Mock] 웹소켓 서버에 연결하지 못해 목 데이터로 전환합니다.",
-          "color:#101012; background:#ffbadc; padding:2px 6px; border-radius:4px; font-weight:bold",
-          { roomCode, participantId },
-        );
-
-        socketClient.disconnect();
-        startMockGame();
-      }, MOCK_FALLBACK_DELAY_MS);
-    }
 
     // WS 연결(및 재연결) 성공 직후 4.1 입장 발행 -> PARTICIPANT_LIST_UPDATE로 참가자 목록을 받는다.
     // 그 직후 REST로 현재 상태를 동기화해서, 최초 진입/새로고침/재접속 시 놓친 화면 상태를 복구한다.
     const unsubConnected = socketClient.onConnected(() => {
       RoomSocket.enterRoom(roomCode);
-
-      RoomAPI.syncStatus(roomCode, participantId)
-        .then((state) => {
-          if (state.participants) {
-            setParticipants(state.participants);
-          }
-
-          if (state.roomStatus === "FINISHED") {
-            setGameEnded(true);
-            return;
-          }
-
-          if (!state.currentRound) return;
-
-          if (state.currentRound.phase === "RESULT") {
-            setRound(state.currentRound);
-            setRoundResult(state.currentRound);
-            setVoteUpdate({
-              votedCount: state.currentRound.nextVoteCount,
-              requiredCount: state.currentRound.nextVoteRequired,
-            });
-          } else {
-            setRound(state.currentRound);
-            setRoundResult(null);
-            setVoteUpdate(null);
-          }
-        })
-        .catch((syncError) => {
-          console.error("[REST] 상태 동기화(syncStatus) 실패", syncError);
-        });
+      syncRoomState();
     });
 
     const unsubEvent = socketClient.onEvent((event) => {
@@ -217,7 +200,6 @@ export function useRoomSocket({
     });
 
     return () => {
-      clearTimeout(mockFallbackTimer);
       unsubStatus();
       unsubConnected();
       unsubEvent();
@@ -242,6 +224,11 @@ export function useRoomSocket({
   const start = useCallback(() => {
     if (mockMode) {
       console.log("%c[Mock] start", "color:#8dacff");
+      mockIndexRef.current = 0;
+      setRoundResult(null);
+      setVoteUpdate(null);
+      setGameEnded(false);
+      setRound(mockRoundsRef.current[0] ?? null);
       return;
     }
     RoomSocket.startGame(roomCode);

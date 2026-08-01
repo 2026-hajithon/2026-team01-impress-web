@@ -1,64 +1,54 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import CreateRoomGraphic from "@assets/Room/CreateRoom1.svg";
 import Button from "@components/Button";
 import TextField from "@components/TextField";
-
 import { RoomAPI } from "@apis/RoomAPI";
 
 const EnterMemberNamePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
-  const roomCode = location.state?.roomCode;
-  const roomName = location.state?.roomName;
-  const hostName = location.state?.hostName
-  
+  // 앱 내 코드/QR 입력 흐름(state)뿐 아니라, QR을 폰 기본 카메라로 찍어 이 페이지로
+  // 바로 들어온 경우(쿼리스트링)도 지원한다.
+  const roomCode = location.state?.roomCode || searchParams.get("roomCode");
   const [memberName, setMemberName] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async () => {
     const trimmedName = memberName.trim();
 
-    if (!trimmedName || !roomCode || isLoading) return;
+    if (!trimmedName || !roomCode || isJoining) return;
 
-    setIsLoading(true);
+    setIsJoining(true);
     setErrorMessage("");
 
     try {
-      const { participantId, roomStatus, role } =
-        await RoomAPI.joinRoom(roomCode, trimmedName);
-
-      sessionStorage.setItem("roomCode", roomCode);
-      sessionStorage.setItem("roomName", roomName || "");
-      sessionStorage.setItem("hostName", hostName || "");
-      sessionStorage.setItem("participantId", String(participantId));
-      sessionStorage.setItem("participantName", trimmedName);
-      sessionStorage.setItem("participantRole", role);
-
-      navigate("/member-waiting", {
-        state: {
-          roomCode,
-          roomName,
-          hostName,
-          memberName: trimmedName,
-          participantId,
-          roomStatus,
-          role,
-        },
-      });
-    } catch (error) {
-      const apiError = error.response?.data?.error;
-
-      setErrorMessage(
-        apiError?.message ||
-          apiError ||
-          "모임방에 입장하지 못했어요.",
+      const { participantId, role } = await RoomAPI.joinRoom(
+        roomCode,
+        trimmedName,
       );
+
+      sessionStorage.setItem("hostName", trimmedName);
+      sessionStorage.setItem("roomCode", roomCode);
+      sessionStorage.setItem("participantId", String(participantId));
+      sessionStorage.setItem("role", role);
+      sessionStorage.removeItem("gameMode");
+      sessionStorage.removeItem("mockParticipants");
+
+      navigate(`/rooms/${roomCode}/waiting`);
+    } catch (error) {
+      console.error(
+        "%c[REST ✕] 방 참여 실패",
+        "color:#ff3b9b; font-weight:bold",
+        error,
+      );
+      setErrorMessage("방 참여에 실패했어요. 입장 코드를 다시 확인해주세요.");
     } finally {
-      setIsLoading(false);
+      setIsJoining(false);
     }
   };
 
@@ -71,11 +61,7 @@ const EnterMemberNamePage = () => {
         ].join(" ")}
       >
         <div className="flex flex-col gap-1.5 p-5 pt-12">
-          <img
-            src={CreateRoomGraphic}
-            alt=""
-            className="size-[70px]"
-          />
+          <img src={CreateRoomGraphic} alt="" className="size-[70px]" />
 
           <h1 className="text-head2-1 text-white">
             모임방에 입장하기 전,
@@ -90,16 +76,24 @@ const EnterMemberNamePage = () => {
             onChange={(event) => setMemberName(event.target.value)}
             placeholder="이름을 입력하세요"
             maxLength={20}
-            message={ errorMessage || "*최대 20자까지 입력할 수 있어요" }
+            message={errorMessage || "*최대 20자까지 입력할 수 있어요"}
             autoComplete="name"
           />
         </div>
 
         <div className="mt-auto flex flex-col gap-2 px-5 pb-8 pt-3">
+          {errorMessage && (
+            <p
+              className="text-center text-caption1-2 text-main-pink-1"
+              aria-live="polite"
+            >
+              {errorMessage}
+            </p>
+          )}
           <Button
             onClick={handleSubmit}
-            loading={isLoading}
-            disabled={!memberName.trim() || !roomCode}
+            disabled={!memberName.trim() || !roomCode || isJoining}
+            loading={isJoining}
           >
             다음으로
           </Button>

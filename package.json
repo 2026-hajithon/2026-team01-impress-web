@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:frontend-test": "vite --open /frontend-test.html",
     "build": "vite build",
+    "build:frontend-test": "vite build --config vite.frontend-test.config.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },

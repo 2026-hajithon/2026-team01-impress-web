@@ -46,7 +46,13 @@ const GameRoundPage = () => {
   }, []);
 
   const { participants, round, roundResult, voteUpdate, gameEnded, kicked, mockMode, actions } =
-    useRoomSocket({ roomCode, participantId, forceMock, mockHostName: hostName, mockParticipants });
+    useRoomSocket({
+      roomCode,
+      participantId,
+      forceMock,
+      mockHostName: hostName,
+      mockParticipants,
+    });
 
   const [timeLeft, setTimeLeft] = useState(0);
   const [submitted, setSubmitted] = useState(false);
@@ -66,7 +72,9 @@ const GameRoundPage = () => {
     setSyncedRoundId(round.roundId);
     setTimeLeft(round.timeLimit ?? round.timeRemaining ?? DEFAULT_ROUND_DURATION);
     setSubmitted(Boolean(round.myAnswerSubmitted));
-    setLastAnswer(null);
+    // 새로고침/재접속으로 곧장 이 라운드를 받은 경우, /sync가 내려준 mySelectedOptionId로
+    // "내가 고른 선택지" 표시를 복구한다 (직접 제출한 경우는 handleSubmit이 이미 채워둔다).
+    setLastAnswer(round.mySelectedOptionId ?? null);
   }
 
   useEffect(() => {

@@ -46,12 +46,31 @@ const ScanRoomQrPage = () => {
     const scanner = new Html5Qrcode("room-qr-reader");
     scannerRef.current = scanner;
 
+    // QR은 이제 방 코드 대신 "/enter-member-name?roomCode=1234" 형태의 링크를 담고 있다
+    // (ShareRoomModal 참고, 폰 기본 카메라로 찍었을 때 바로 입장 화면으로 가기 위함).
+    // 다만 예전 방식(코드만 담긴 QR)이나 사용자가 직접 붙여넣은 값도 계속 지원한다.
+    const extractRoomCode = (text) => {
+      const trimmed = text.trim();
+
+      if (/^\d{4}$/.test(trimmed)) return trimmed;
+
+      try {
+        const url = new URL(trimmed);
+        const codeFromQuery = url.searchParams.get("roomCode");
+        if (codeFromQuery && /^\d{4}$/.test(codeFromQuery)) return codeFromQuery;
+      } catch {
+        // URL이 아니면 무시하고 아래에서 스캔을 계속한다.
+      }
+
+      return null;
+    };
+
     const handleScanSuccess = async (decodedText) => {
       if (hasScannedRef.current) return;
 
-      const roomCode = decodedText.trim();
+      const roomCode = extractRoomCode(decodedText);
 
-      if (!/^\d{4}$/.test(roomCode)) return;
+      if (!roomCode) return;
 
       hasScannedRef.current = true;
 

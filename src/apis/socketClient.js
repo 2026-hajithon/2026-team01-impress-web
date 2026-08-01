@@ -1,7 +1,9 @@
 import { Client } from "@stomp/stompjs";
 import { SOCKET_STATUS } from "../utils/eventTypes";
 
-const BROKER_URL = import.meta.env.DEV
+const REST_URL = import.meta.env.VITE_PUBLIC_URL ?? "";
+const USE_LOCAL_BACKEND = /^https?:\/\/(localhost|127\.0\.0\.1)(?::|\/|$)/.test(REST_URL);
+const BROKER_URL = import.meta.env.DEV && USE_LOCAL_BACKEND
   ? import.meta.env.VITE_WS_LOCAL_URL
   : import.meta.env.VITE_WS_URL;
 
