@@ -3,8 +3,10 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import CreateRoomGraphic from "@assets/Room/CreateRoom1.svg";
 import Button from "@components/Button";
+import GameBackground from "@components/games/GameBackground";
 import TextField from "@components/TextField";
 import { RoomAPI } from "@apis/RoomAPI";
+import { navigateWithTransition } from "@utils/navigateWithTransition";
 
 const EnterMemberNamePage = () => {
   const navigate = useNavigate();
@@ -42,8 +44,9 @@ const EnterMemberNamePage = () => {
       sessionStorage.removeItem("gameMode");
       sessionStorage.removeItem("mockParticipants");
 
-      // 방장과 다른 화면(MemberWaitingPage)으로 보낸다 — "게임 시작"/"강퇴"는 방장 전용 화면에만 있어야 한다.
-      navigate("/member-waiting", {
+      // 참여 API가 발급한 participantId/role을 저장한 뒤 정식 대기방 경로로 이동한다.
+      // WaitingRoomRoute가 role을 확인해 일반 참여자 화면을 렌더링하고 useRoomSocket이 연결된다.
+      navigateWithTransition(navigate, `/rooms/${roomCode}/waiting`, {
         state: { roomCode, roomName, hostName, memberName: trimmedName, participantId },
       });
     } catch (error) {
@@ -62,10 +65,12 @@ const EnterMemberNamePage = () => {
     <main className="min-h-dvh bg-white">
       <section
         className={[
-          "mx-auto flex min-h-dvh w-full max-w-[430px]",
+          "relative isolate mx-auto flex min-h-dvh w-full max-w-[430px]",
           "flex-col bg-black",
         ].join(" ")}
       >
+        <GameBackground />
+
         <div className="flex flex-col gap-1.5 p-5 pt-12">
           <img src={CreateRoomGraphic} alt="" className="size-[70px]" />
 
@@ -106,7 +111,7 @@ const EnterMemberNamePage = () => {
 
           <Button
             variant="neutral"
-            onClick={() => navigate(-1)}
+            onClick={() => navigateWithTransition(navigate, -1, undefined, "backward")}
             className="text-gray-200"
           >
             이전으로

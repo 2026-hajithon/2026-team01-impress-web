@@ -1,7 +1,7 @@
 const LoadingSpinner = () => {
   return (
     <svg
-      className="absolute bottom-6 left-1/2 size-8 -translate-x-1/2 animate-spin"
+      className="onboarding-spinner absolute left-1/2 size-8 -translate-x-1/2 animate-spin"
       viewBox="0 0 32 32"
       fill="none"
       aria-label="로딩 중"

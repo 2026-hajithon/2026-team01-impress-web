@@ -6,8 +6,10 @@ import Modal from "@components/Modal";
 
 import createRoomGraphic from "@assets/Room/CreateRoom2.svg";
 import Button from "@components/Button";
+import GameBackground from "@components/games/GameBackground";
 import TextField from "@components/TextField";
 import { RoomAPI } from "@apis/RoomAPI";
+import { navigateWithTransition } from "@utils/navigateWithTransition";
 
 const CreateRoomTitlePage = () => {
   const [roomName, setRoomName] = useState("");
@@ -56,21 +58,23 @@ const CreateRoomTitlePage = () => {
   const handleInvite = () => {
     setIsModalOpen(false);
     const roomCode = createdRoomCode || sessionStorage.getItem("roomCode") || "LOCAL";
-    navigate(`/rooms/${roomCode}/waiting`);
+    navigateWithTransition(navigate, `/rooms/${roomCode}/waiting`);
   };
 
   const handlePrevious = () => {
-    navigate(-1);
+    navigateWithTransition(navigate, -1, undefined, "backward");
   };
 
   return (
     <main className="min-h-dvh bg-white">
       <section
         className={[
-          "mx-auto flex min-h-dvh w-full max-w-[430px]",
+          "relative isolate mx-auto flex min-h-dvh w-full max-w-[430px]",
           "flex-col bg-black",
         ].join(" ")}
       >
+        <GameBackground />
+
         <div className="px-5 pt-12">
           <div className="pb-5">
             <img

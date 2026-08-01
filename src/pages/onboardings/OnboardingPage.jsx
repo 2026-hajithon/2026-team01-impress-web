@@ -82,7 +82,7 @@ const OnboardingPage = () => {
   const CurrentSlide = slides[currentIndex];
 
   return (
-    <div className="relative isolate mx-auto h-dvh w-full max-w-107.5 overflow-hidden bg-black">
+    <div className="onboarding-viewport relative isolate mx-auto w-full max-w-107.5 overflow-hidden bg-black">
       <GameBackground />
 
       {outgoingSlide && (

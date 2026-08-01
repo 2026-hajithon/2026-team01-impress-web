@@ -1,17 +1,57 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
 @import "tailwindcss";
 
-/* Pretendard 폰트 설정 */
-@font-face {
-  font-family: "Pretendard Variable";
-  src: url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css")
-    format("woff2");
-  font-weight: 100 900;
-}
-
 :root {
-  font-family: "Pretendard Variable";
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", sans-serif;
   background-color: #ffffff;
   /* background-color: #101012; */
+}
+
+@keyframes flow-screen-enter-forward {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes flow-screen-enter-backward {
+  from {
+    transform: translateX(-24%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+::view-transition-old(root) {
+  animation: none;
+}
+
+::view-transition-new(root) {
+  animation: flow-screen-enter-forward 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  box-shadow: -12px 0 28px rgb(0 0 0 / 18%);
+}
+
+html[data-flow-transition="backward"]::view-transition-old(root) {
+  z-index: 2;
+  animation: flow-screen-enter-backward 320ms cubic-bezier(0.22, 1, 0.36, 1) reverse both;
+  box-shadow: 12px 0 28px rgb(0 0 0 / 18%);
+}
+
+html[data-flow-transition="backward"]::view-transition-new(root) {
+  z-index: 1;
+  animation: none;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
 }
 
 /* 디자인 토큰 설정 */

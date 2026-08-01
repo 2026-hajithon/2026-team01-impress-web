@@ -11,12 +11,11 @@ const PersonalChoiceGamePage = ({
   question,
   options,
   submitted,
-  isQuestionTarget = false,
   onSubmit,
   onLeave,
 }) => {
   const [selected, setSelected] = useState(null);
-  const locked = submitted || isQuestionTarget || selected !== null;
+  const locked = submitted || selected !== null;
 
   const handleSelect = (option) => {
     if (locked) return;
@@ -41,9 +40,7 @@ const PersonalChoiceGamePage = ({
           disabled={locked}
         />
         <p className="text-center text-body1-2 text-gray-50">
-          {isQuestionTarget
-            ? "질문의 주인공은 답변할 수 없어요"
-            : "한번 선택하면 바꿀 수 없어요"}
+          한번 선택하면 바꿀 수 없어요
         </p>
       </div>
     </div>

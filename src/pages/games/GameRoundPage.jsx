@@ -137,11 +137,11 @@ const GameRoundPage = () => {
   if (!round) return null;
 
   const target = participants.find((p) => p.participantId === round.targetId);
-  const isPersonalQuestion = round.qType !== Q_TYPE.COMMON_VOTE;
-  const isQuestionTarget = isPersonalQuestion && Number(round.targetId) === participantId;
+  const isBlankQuestionTarget =
+    round.qType === Q_TYPE.BLANK && Number(round.targetId) === participantId;
 
   const handleSubmit = (answer) => {
-    if (isQuestionTarget) return;
+    if (isBlankQuestionTarget) return;
     setSubmitted(true);
     setLastAnswer(Object.values(answer)[0]);
     actions.submitAnswer({ roundId: round.roundId, ...answer });
@@ -209,7 +209,7 @@ const GameRoundPage = () => {
           {...commonProps}
           targetName={target?.name}
           question={round.question}
-          isQuestionTarget={isQuestionTarget}
+          isQuestionTarget={isBlankQuestionTarget}
           onSubmit={(textAnswer) => handleSubmit({ textAnswer })}
         />
       );
@@ -220,7 +220,6 @@ const GameRoundPage = () => {
           targetName={target?.name}
           question={round.question}
           options={round.options ?? []}
-          isQuestionTarget={isQuestionTarget}
           onSubmit={(selectedOptionId) => handleSubmit({ selectedOptionId })}
         />
       );

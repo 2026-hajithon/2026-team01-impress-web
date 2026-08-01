@@ -7,8 +7,10 @@ import { RoomApiEtc } from "@apis/RoomApiEtc";
 import Arrow from "@assets/Room/Arrow.svg";
 import QrGraphic from "@assets/Room/Qr.svg";
 import Button from "@components/Button";
+import GameBackground from "@components/games/GameBackground";
 
 import ConfirmRoomModal from "@pages/joinRoom/components/ConfirmRoomModal";
+import { navigateWithTransition } from "@utils/navigateWithTransition";
 
 const ScanRoomQrPage = () => {
   const navigate = useNavigate();
@@ -33,7 +35,7 @@ const ScanRoomQrPage = () => {
     };
 
   const handleConfirmEntry = () => {
-    navigate("/enter-member-name", {
+    navigateWithTransition(navigate, "/enter-member-name", {
       state: {
         roomCode: scannedRoomCode,
         roomName: roomInformation.roomName,
@@ -46,8 +48,8 @@ const ScanRoomQrPage = () => {
     const scanner = new Html5Qrcode("room-qr-reader");
     scannerRef.current = scanner;
 
-    // QR은 이제 방 코드 대신 "/enter-member-name?roomCode=1234" 형태의 링크를 담고 있다
-    // (ShareRoomModal 참고, 폰 기본 카메라로 찍었을 때 바로 입장 화면으로 가기 위함).
+    // QR은 이제 방 코드 대신 "/enter-room-code?roomCode=1234" 형태의 링크를 담고 있다
+    // (ShareRoomModal 참고, 폰 기본 카메라로 찍어도 방 확인 모달을 거치기 위함).
     // 다만 예전 방식(코드만 담긴 QR)이나 사용자가 직접 붙여넣은 값도 계속 지원한다.
     const extractRoomCode = (text) => {
       const trimmed = text.trim();
@@ -143,12 +145,14 @@ const ScanRoomQrPage = () => {
   }, [scannerSession]);
 
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-[430px] bg-black">
+    <main className="relative isolate mx-auto min-h-dvh w-full max-w-[430px] bg-black">
+      <GameBackground />
+
       <section className="flex min-h-dvh flex-col">
         <div className="flex h-[68px] items-center px-5 pt-5">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => navigateWithTransition(navigate, -1, undefined, "backward")}
             aria-label="이전 화면으로 이동"
             className="flex size-6 items-center justify-center"
           >
@@ -191,7 +195,7 @@ const ScanRoomQrPage = () => {
         <div className="mt-auto px-5 pb-8 pt-3">
           <Button
             variant="neutral"
-            onClick={() => navigate("/")}
+            onClick={() => navigateWithTransition(navigate, "/", undefined, "backward")}
             className="text-gray-200"
           >
             홈화면으로 돌아가기

@@ -16,17 +16,17 @@ const GameBackground = () => {
       <img
         src={BlobSmall}
         alt=""
-        className="absolute -right-2 top-[27%] size-11 mix-blend-hard-light"
+        className="absolute -right-3 top-[27%] size-16 mix-blend-hard-light"
       />
       <img
         src={StarLarge}
         alt=""
-        className="absolute -bottom-25 left-57.75 size-61.75 rotate-[-165deg] mix-blend-hard-light"
+        className="absolute bottom-[-110px] left-[220px] size-[280px] rotate-[-165deg] mix-blend-hard-light"
       />
       <img
         src={StarSmall}
         alt=""
-        className="absolute bottom-15 -left-10 size-39.75 rotate-[-165deg] mix-blend-hard-light"
+        className="absolute bottom-14 -left-11 size-[180px] rotate-[-165deg] mix-blend-hard-light"
       />
     </div>
   );

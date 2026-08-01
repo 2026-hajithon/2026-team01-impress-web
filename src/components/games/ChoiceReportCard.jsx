@@ -4,12 +4,12 @@ import OptionMiddle from "@assets/Result/ResultType/OptionMiddle.svg";
 import OptionIncorrect from "@assets/Result/ResultType/OptionIncorrect.svg";
 import CorrectOptionStarLarge from "@assets/Game/Option/GeneralOptionStar1.svg";
 import CorrectOptionStarSmall from "@assets/Game/Option/GeneralOptionStar2.svg";
+import { ACCURACY_TIER, getAccuracyTier } from "@utils/reportCards";
 
-// 정답률 3단계 (Figma 282:5171). rate = 정답자 수 / 전체 응답자 수.
-const getAccuracyTierImage = (rate) => {
-  if (rate >= 0.6) return OptionCorrect;
-  if (rate >= 0.35) return OptionMiddle;
-  return OptionIncorrect;
+const ACCURACY_TIER_IMAGE = {
+  [ACCURACY_TIER.LOW]: OptionIncorrect,
+  [ACCURACY_TIER.MIDDLE]: OptionMiddle,
+  [ACCURACY_TIER.HIGH]: OptionCorrect,
 };
 
 // Figma "결과지_객관식+공동"(282:5171)의 객관식(INDIVIDUAL_CHOICE) 콘텐츠 영역.
@@ -20,10 +20,10 @@ const ChoiceReportCard = ({
   mostVotedCount,
   totalVotes,
   correctCount = 0,
-  totalCount = 0,
+  eligibleAnswerCount = 0,
 }) => {
-  const rate = totalCount > 0 ? correctCount / totalCount : 0;
-  const tierImage = getAccuracyTierImage(rate);
+  const tier = getAccuracyTier(correctCount, eligibleAnswerCount);
+  const tierImage = ACCURACY_TIER_IMAGE[tier];
 
   return (
     <div className="flex flex-col gap-4 px-5">

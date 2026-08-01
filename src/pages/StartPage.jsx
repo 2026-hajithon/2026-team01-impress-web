@@ -1,33 +1,30 @@
 import Button from "@components/Button";
+import GameBackground from "@components/games/GameBackground";
 import homeLogo from "@assets/Home/HomeLogo.svg";
 import homeTitle from "@assets/Home/HomeTitle.svg";
 
 import { useNavigate } from "react-router-dom";
+import { navigateWithTransition } from "@utils/navigateWithTransition";
 
 const StartPage = () => {
     const navigate = useNavigate();
 
     const handleCreateRoom = () => {
-        navigate("/enter-leader-name");
+        navigateWithTransition(navigate, "/enter-leader-name");
     };
 
     const handleJoinRoom = () => {
-        navigate("/enter-room-code");
+        navigateWithTransition(navigate, "/enter-room-code");
     };
   return (
     <main className="min-h-dvh bg-white">
       <section
         className={[
-          "relative mx-auto flex min-h-dvh w-full max-w-[430px]",
+          "relative isolate mx-auto flex min-h-dvh w-full max-w-[430px]",
           "flex-col overflow-hidden bg-black",
         ].join(" ")}
       >
-        {/* 추후 하단 배경 그래픽이 들어갈 영역 */}
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2"
-          aria-hidden="true"
-        >
-        </div>
+        <GameBackground />
 
         {/* 메인 로고 및 그래픽 영역 */}
         <div
@@ -41,13 +38,13 @@ const StartPage = () => {
             src={homeLogo}
             alt=""
             aria-hidden="true"
-            className="h-auto w-1/2 max-w-[195px]"
+            className="h-auto w-1/2 max-w-[195px] translate-x-[6px]"
           />
 
           <img
             src={homeTitle}
             alt="I'm Press"
-            className="h-auto w-[62%] max-w-[243px]"
+            className="h-auto w-[62%] max-w-[243px] translate-x-[6px]"
           />
         </div>
 

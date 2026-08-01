@@ -1,21 +1,27 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { RoomApiEtc } from "@apis/RoomApiEtc";
 
 import Arrow from "@assets/Room/Arrow.svg";
 import EnterRoomGraphic from "@assets/Room/EnterRoom.svg";
 import Button from "@components/Button";
+import GameBackground from "@components/games/GameBackground";
 import TextField from "@components/TextField";
 
 import ConfirmRoomModal from "@pages/joinRoom/components/ConfirmRoomModal";
+import { navigateWithTransition } from "@utils/navigateWithTransition";
 
 
 
 const EnterRoomCodePage = () => {
   const navigate = useNavigate();
-  const [roomCode, setRoomCode] = useState("");
+  const [searchParams] = useSearchParams();
+  const roomCodeFromQr = searchParams.get("roomCode") ?? "";
+  const validQrRoomCode = /^\d{4}$/.test(roomCodeFromQr) ? roomCodeFromQr : "";
+  const [roomCode, setRoomCode] = useState(validQrRoomCode);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const hasRequestedQrRoomRef = useRef(false);
 
   const [roomInformation, setRoomInformation] = useState({
     roomName: "",
@@ -30,16 +36,14 @@ const EnterRoomCodePage = () => {
     setRoomCode(numbersOnly.slice(0, 4));
   };
 
-  const handleSubmit = async () => {
-    if (roomCode.length !== 4 || isLoading) return;
-
+  const requestRoomConfirmation = useCallback(async (targetRoomCode) => {
     setIsLoading(true);
     setErrorMessage("");
 
     try {
       const [hostData, roomData] = await Promise.all([
-        RoomApiEtc.getRoomHost(roomCode),
-        RoomApiEtc.getRoomName(roomCode),
+        RoomApiEtc.getRoomHost(targetRoomCode),
+        RoomApiEtc.getRoomName(targetRoomCode),
       ]);
 
       setRoomInformation({
@@ -56,10 +60,24 @@ const EnterRoomCodePage = () => {
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  // 휴대폰 기본 카메라로 공유 QR을 찍고 진입하면 방 정보를 즉시 조회해
+  // 수동 입장코드 입력과 같은 확인 모달을 띄운다. StrictMode에서도 한 번만 요청한다.
+  useEffect(() => {
+    if (!validQrRoomCode || hasRequestedQrRoomRef.current) return;
+
+    hasRequestedQrRoomRef.current = true;
+    void requestRoomConfirmation(validQrRoomCode);
+  }, [requestRoomConfirmation, validQrRoomCode]);
+
+  const handleSubmit = () => {
+    if (roomCode.length !== 4 || isLoading) return;
+    void requestRoomConfirmation(roomCode);
   };
 
   const handleConfirmEntry = () => {
-    navigate("/enter-member-name", {
+    navigateWithTransition(navigate, "/enter-member-name", {
       state: {
         roomCode,
         roomName: roomInformation.roomName,
@@ -69,16 +87,18 @@ const EnterRoomCodePage = () => {
   };
 
   const handleQrEntry = () => {
-    navigate("/scan-room-qr");
+    navigateWithTransition(navigate, "/scan-room-qr");
   };
 
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-[430px] bg-black">
+    <main className="relative isolate mx-auto min-h-dvh w-full max-w-[430px] bg-black">
+      <GameBackground />
+
       <section className="flex min-h-dvh flex-col">
         <div className="flex h-[68px] items-center px-5 pt-5">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => navigateWithTransition(navigate, -1, undefined, "backward")}
             aria-label="이전 화면으로 이동"
             className="flex size-6 items-center justify-center"
           >

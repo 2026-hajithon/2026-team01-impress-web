@@ -18,7 +18,7 @@ const ReportCardView = forwardRef(({ roomName, date, card }, ref) => {
           mostVotedCount={card.mostVotedCount}
           totalVotes={card.totalOptionVotes}
           correctCount={card.correctCount}
-          totalCount={card.totalCount}
+          eligibleAnswerCount={card.eligibleAnswerCount}
         />
       )}
       <CommonVoteSection

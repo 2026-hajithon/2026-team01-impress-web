@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 
 import createRoomGraphic from "@assets/Room/CreateRoom1.svg";
 import Button from "@components/Button";
+import GameBackground from "@components/games/GameBackground";
 import TextField from "@components/TextField";
+import { navigateWithTransition } from "@utils/navigateWithTransition";
 
 const EnterLeaderNamePage = () => {
   const [name, setName] = useState("");
@@ -13,7 +15,7 @@ const EnterLeaderNamePage = () => {
   const handleNext = () => {
     if (!name.trim()) return;
 
-    navigate("/create-room-title", {
+    navigateWithTransition(navigate, "/create-room-title", {
       state: {
         hostName: name.trim(),
       },
@@ -21,17 +23,19 @@ const EnterLeaderNamePage = () => {
   };
 
   const handlePrevious = () => {
-    navigate(-1);
+    navigateWithTransition(navigate, -1, undefined, "backward");
   };
 
   return (
     <main className="min-h-dvh bg-white">
       <section
         className={[
-          "mx-auto flex min-h-dvh w-full max-w-[430px]",
+          "relative isolate mx-auto flex min-h-dvh w-full max-w-[430px]",
           "flex-col bg-black",
         ].join(" ")}
       >
+        <GameBackground />
+
         <div className="px-5 pt-12">
             <div className="pb-5">
                 <img

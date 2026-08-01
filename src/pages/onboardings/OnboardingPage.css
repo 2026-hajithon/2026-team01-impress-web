@@ -6,6 +6,84 @@
   animation: onboarding-crossfade-out 700ms ease-in-out both;
 }
 
+/* 100dvh 미지원 Safari는 앞의 100vh를, 지원 브라우저는 실제 가시 영역인 100dvh를 쓴다. */
+.onboarding-viewport,
+.onboarding-layout {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.onboarding-layout {
+  min-height: 0;
+  padding-bottom: calc(116px + env(safe-area-inset-bottom, 0px));
+}
+
+.onboarding-status {
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+.onboarding-spinner {
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+/* 목업이 남은 세로 공간만 사용하게 해 하단 로딩 영역과 절대 겹치지 않게 한다. */
+.onboarding-mockup {
+  --mockup-fade-start: 45%;
+
+  flex: 1 1 auto;
+  width: min(310px, 100%);
+  min-height: 0;
+  max-height: 496px;
+  margin-top: 60px;
+  margin-top: clamp(24px, 7dvh, 60px);
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 var(--mockup-fade-start),
+    transparent 100%
+  );
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 var(--mockup-fade-start),
+    transparent 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+}
+
+.onboarding-mockup img {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: auto;
+}
+
+@media (max-height: 760px) {
+  .onboarding-layout {
+    padding-top: 40px;
+  }
+
+  .onboarding-mockup {
+    --mockup-fade-start: 30%;
+    margin-top: 32px;
+  }
+}
+
+@media (max-height: 680px) {
+  .onboarding-layout {
+    padding-top: 28px;
+  }
+
+  .onboarding-mockup {
+    --mockup-fade-start: 16%;
+    margin-top: 24px;
+  }
+}
+
 @keyframes onboarding-crossfade-in {
   from {
     opacity: 0;
