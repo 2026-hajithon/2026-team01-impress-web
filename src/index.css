@@ -14,6 +14,13 @@
 
 /* 디자인 토큰 설정 */
 @theme inline {
+  /* Main Gradient */
+  --background-image-main-gradient: linear-gradient(
+    to right,
+    #ff3b9b 0%,
+    #6991ff 100%
+  );
+
   /* Main Pink */
   --color-main-pink: #ff3b9b;
   --color-main-pink-1: #ff75b9;
