@@ -2,13 +2,17 @@ import Button from "@components/Button";
 import homeLogo from "@assets/Home/HomeLogo.svg";
 import homeTitle from "@assets/Home/HomeTitle.svg";
 
+import { useNavigate } from "react-router-dom";
+
 const StartPage = () => {
+    const navigate = useNavigate();
+
     const handleCreateRoom = () => {
-        // 이름 입력 화면으로 이동할 예정
+        navigate("/enter-leader-name");
     };
 
     const handleJoinRoom = () => {
-        // 입장 코드 입력 화면으로 이동할 예정
+        navigate("/enter-room-code");
     };
   return (
     <main className="min-h-dvh bg-white">
