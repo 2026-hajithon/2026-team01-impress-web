@@ -1,10 +1,11 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+
 import HomePage from "@pages/HomePage";
 import StartPage from "@pages/StartPage";
 import EnterLeaderNamePage from "@pages/createRoom/EnterLeaderNamePage";
 import CreateRoomTitlePage from "@pages/createRoom/CreateRoomTitlePage";
 
-function App() {
+const App = () => {
   return (
     <BrowserRouter>
       <Routes>
@@ -15,6 +16,6 @@ function App() {
       </Routes>
     </BrowserRouter>
   );
-}
+};
 
 export default App;
