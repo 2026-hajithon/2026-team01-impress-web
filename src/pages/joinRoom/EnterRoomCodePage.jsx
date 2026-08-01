@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { RoomApiEtc } from "@apis/RoomApiEtc";
+
 import Arrow from "@assets/Room/Arrow.svg";
 import EnterRoomGraphic from "@assets/Room/EnterRoom.svg";
 import Button from "@components/Button";
@@ -15,20 +17,54 @@ const EnterRoomCodePage = () => {
   const [roomCode, setRoomCode] = useState("");
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
+  const [roomInformation, setRoomInformation] = useState({
+    roomName: "",
+    hostName: "",
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const handleChangeRoomCode = (event) => {
     const numbersOnly = event.target.value.replace(/\D/g, "");
     setRoomCode(numbersOnly.slice(0, 4));
   };
 
-  const handleSubmit = () => {
-    if (roomCode.length !== 4) return;
+  const handleSubmit = async () => {
+    if (roomCode.length !== 4 || isLoading) return;
 
-    setIsConfirmModalOpen(true);
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const [hostData, roomData] = await Promise.all([
+        RoomApiEtc.getRoomHost(roomCode),
+        RoomApiEtc.getRoomName(roomCode),
+      ]);
+
+      setRoomInformation({
+        hostName: hostData.hostName,
+        roomName: roomData.roomName,
+      });
+
+      setIsConfirmModalOpen(true);
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.error?.message ||
+          "방 정보를 확인하지 못했어요.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleConfirmEntry = () => {
     navigate("/enter-member-name", {
-        state: { roomCode },
+      state: {
+        roomCode,
+        roomName: roomInformation.roomName,
+        hostName: roomInformation.hostName,
+      },
     });
   };
 
@@ -75,6 +111,8 @@ const EnterRoomCodePage = () => {
             placeholder="입장코드를 입력하세요"
             inputMode="numeric"
             autoComplete="off"
+            message={errorMessage}
+            hasError={Boolean(errorMessage)}
             maxLength={4}
             aria-label="모임방 입장코드"
           />
@@ -83,6 +121,7 @@ const EnterRoomCodePage = () => {
         <div className="mt-auto flex flex-col gap-2.5 px-5 pb-8 pt-3">
           <Button
             onClick={handleSubmit}
+            loading={isLoading}
             disabled={roomCode.length !== 4}
           >
             입력 완료
@@ -101,8 +140,8 @@ const EnterRoomCodePage = () => {
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={handleConfirmEntry}
-        roomName="하지톤 1팀"
-        hostName="김태현"
+        roomName={roomInformation.roomName}
+        hostName={roomInformation.hostName}
       />
     </main>
   );

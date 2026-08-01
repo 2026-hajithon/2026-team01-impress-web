@@ -1,3 +1,7 @@
+import { useRoomSocket } from "@hooks/useRoomSocket";
+
+import { RoomAPI } from "@apis/RoomAPI";
+
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -7,36 +11,66 @@ import Share from "@assets/Room/Share.svg";
 import Button from "@components/Button";
 import ShareRoomModal from "@pages/createRoom/components/ShareRoomModal";
 
-const mockParticipants = [
-  { participantId: 1, name: "김태현", role: "HOST" },
-  { participantId: 2, name: "김가빈", role: "GUEST" },
-  { participantId: 3, name: "김수현", role: "GUEST" },
-  { participantId: 4, name: "윤소연", role: "GUEST" },
-  { participantId: 5, name: "이혁", role: "GUEST" },
-  { participantId: 6, name: "유영주", role: "GUEST" },
-];
-
 const MemberWaitingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  const roomCode = location.state?.roomCode || "1234";
-  const roomName = location.state?.roomName || "하지톤 1팀";
-  const memberName = location.state?.memberName || "김가빈";
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [leaveError, setLeaveError] = useState("");
 
-  const participants = [
-    ...mockParticipants,
-    {
-        participantId: mockParticipants.length + 1,
-        name: memberName,
-        role: "GUEST",
-    },
-    ];
+  const storedParticipantId =
+    sessionStorage.getItem("participantId");
 
-  const handleLeaveRoom = () => {
-        navigate("/start");
+  const roomCode =
+    location.state?.roomCode ||
+    sessionStorage.getItem("roomCode");
+
+  const roomName =
+    location.state?.roomName ||
+    sessionStorage.getItem("roomName") ||
+    "모임방";
+
+  const participantId =
+    location.state?.participantId ??
+    (storedParticipantId
+      ? Number(storedParticipantId)
+      : null);
+      
+  const { participants } = useRoomSocket({
+    roomCode,
+    participantId,
+  });
+
+  const handleLeaveRoom = async () => {
+    if (!roomCode || !participantId || isLeaving) return;
+
+    setIsLeaving(true);
+    setLeaveError("");
+
+    try {
+      await RoomAPI.leaveRoom(roomCode, participantId);
+
+      sessionStorage.removeItem("roomCode");
+      sessionStorage.removeItem("roomName");
+      sessionStorage.removeItem("hostName");
+      sessionStorage.removeItem("participantId");
+      sessionStorage.removeItem("participantName");
+      sessionStorage.removeItem("participantRole");
+
+      navigate("/start");
+    } catch (error) {
+      const apiError = error.response?.data?.error;
+
+      setLeaveError(
+        apiError?.message ||
+          apiError ||
+          "모임방을 나가지 못했어요.",
+      );
+    } finally {
+      setIsLeaving(false);
+    }
   };
 
   return (
@@ -120,9 +154,15 @@ const MemberWaitingPage = () => {
         </div>
 
         <footer className="shrink-0 px-5 pb-8 pt-3">
+          {leaveError && (
+            <p className="mb-2 text-caption1-2 text-main-pink">
+              {leaveError}
+            </p>
+          )}
           <Button
             variant="secondary"
             onClick={handleLeaveRoom}
+            loading={isLeaving}
           >
             <span className="flex items-center gap-1">
               <img

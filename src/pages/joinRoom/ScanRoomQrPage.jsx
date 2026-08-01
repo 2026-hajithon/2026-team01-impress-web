@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { useNavigate } from "react-router-dom";
 
+import { RoomApiEtc } from "@apis/RoomApiEtc";
+
 import Arrow from "@assets/Room/Arrow.svg";
 import QrGraphic from "@assets/Room/Qr.svg";
 import Button from "@components/Button";
@@ -18,6 +20,11 @@ const ScanRoomQrPage = () => {
   const [scannedRoomCode, setScannedRoomCode] = useState("");
   const [scannerSession, setScannerSession] = useState(0);
 
+  const [roomInformation, setRoomInformation] = useState({
+    roomName: "",
+    hostName: "",
+  });
+
   const handleCloseConfirmModal = () => {
         hasScannedRef.current = false;
         setScannedRoomCode("");
@@ -26,9 +33,13 @@ const ScanRoomQrPage = () => {
     };
 
   const handleConfirmEntry = () => {
-        navigate("/enter-member-name", {
-            state: { roomCode: scannedRoomCode },
-        });
+    navigate("/enter-member-name", {
+      state: {
+        roomCode: scannedRoomCode,
+        roomName: roomInformation.roomName,
+        hostName: roomInformation.hostName,
+      },
+    });
   };
 
   useEffect(() => {
@@ -48,8 +59,31 @@ const ScanRoomQrPage = () => {
         await scanner.stop();
       }
 
-      setScannedRoomCode(roomCode);
-      setIsConfirmModalOpen(true);
+      setCameraError("");
+
+      try {
+        const [hostData, roomData] = await Promise.all([
+          RoomApiEtc.getRoomHost(roomCode),
+          RoomApiEtc.getRoomName(roomCode),
+        ]);
+
+        setScannedRoomCode(roomCode);
+
+        setRoomInformation({
+          hostName: hostData.hostName,
+          roomName: roomData.roomName,
+        });
+
+        setIsConfirmModalOpen(true);
+      } catch (error) {
+        setCameraError(
+          error.response?.data?.error?.message ||
+            "방 정보를 확인하지 못했어요.",
+        );
+
+        hasScannedRef.current = false;
+        setScannerSession((previous) => previous + 1);
+      }
     };
 
 
@@ -149,9 +183,9 @@ const ScanRoomQrPage = () => {
         isOpen={isConfirmModalOpen}
         onClose={handleCloseConfirmModal}
         onConfirm={handleConfirmEntry}
-        roomName="하지톤 1팀"
-        hostName="김태현"
-    />
+        roomName={roomInformation.roomName}
+        hostName={roomInformation.hostName}
+      />
     </main>
   );
 };
