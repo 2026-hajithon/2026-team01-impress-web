@@ -1,17 +1,33 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import createRoomDoneGraphic from "@assets/Room/CreateRoomDone.svg";
+import Modal from "@components/Modal";
+
 import createRoomGraphic from "@assets/Room/CreateRoom2.svg";
 import Button from "@components/Button";
 import TextField from "@components/TextField";
 
 const CreateRoomTitlePage = () => {
   const [roomName, setRoomName] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const navigate = useNavigate();
 
   const handleCreateRoom = () => {
-    // 생성 완료 모달 및 API는 다음 단계에서 연결
+    if (!roomName.trim()) return;
+
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleInvite = () => {
+    setIsModalOpen(false);
+
+    // 이후 공유하기 또는 대기방으로 이동
   };
 
   const handlePrevious = () => {
@@ -67,6 +83,28 @@ const CreateRoomTitlePage = () => {
             이전으로
           </Button>
         </div>
+        <Modal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          graphic={
+            <img
+              src={createRoomDoneGraphic}
+              alt=""
+              aria-hidden="true"
+              className="h-[191px] w-[198px] object-contain"
+            />
+          }
+          title="모임방을 만들었어요!"
+          description={
+            <>
+              이제 모임방에 멤버를 초대해
+              <br />
+              아이스브레이킹을 시작해보세요
+            </>
+          }
+          actionLabel="초대하기"
+          onAction={handleInvite}
+        />
       </section>
     </main>
   );

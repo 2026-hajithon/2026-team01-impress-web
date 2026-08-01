@@ -11,7 +11,13 @@ const EnterLeaderNamePage = () => {
   const navigate = useNavigate();
 
   const handleNext = () => {
-    // 다음 단계에서 모임 이름 입력 화면으로 연결
+    if (!name.trim()) return;
+
+    navigate("/create-room-title", {
+      state: {
+        hostName: name.trim(),
+      },
+    });
   };
 
   const handlePrevious = () => {
@@ -54,10 +60,11 @@ const EnterLeaderNamePage = () => {
 
         <div className="relative z-10 mt-auto flex flex-col gap-2 px-5 pb-8 pt-2">
             <Button
-                variant="primary"
-                onClick={handleNext}
+              variant="primary"
+              onClick={handleNext}
+              disabled={!name.trim()}
             >
-                다음으로
+              다음으로
             </Button>
 
             <Button
