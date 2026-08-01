@@ -1,24 +1,13 @@
-import CorrectIcon from "@assets/Game/Correct.svg";
+import ResultCheckIcon from "@assets/Result/ResultCheckIcon.svg";
+import OptionCorrect from "@assets/Result/ResultType/OptionCorrect.svg";
+import OptionMiddle from "@assets/Result/ResultType/OptionMiddle.svg";
+import OptionIncorrect from "@assets/Result/ResultType/OptionIncorrect.svg";
 
-// 정답률 3단계 (Figma 282:5171, MCP 호출 한도로 정확한 마스코트 일러스트는 가져오지 못해
-// 말풍선 텍스트 + 톤 컬러로 근사했다). rate = 정답자 수 / 전체 응답자 수.
-const getAccuracyTier = (rate) => {
-  if (rate >= 0.6) {
-    return {
-      tone: "text-main-blue-1",
-      message: "많은 사람들이 정답을 맞혔어요!\n이미지와 실제가 비슷한 당신은 투명한 사람!",
-    };
-  }
-  if (rate >= 0.35) {
-    return {
-      tone: "text-main-pink-1",
-      message: "정답자와 오답자가 반반이에요!\n당신은 두 가지 이미지를 가지고 있나봐요",
-    };
-  }
-  return {
-    tone: "text-main-pink",
-    message: "많은 사람들이 정답을 맞추지 못했어요!\n당신의 반전매력을 발견했어요!",
-  };
+// 정답률 3단계 (Figma 282:5171). rate = 정답자 수 / 전체 응답자 수.
+const getAccuracyTierImage = (rate) => {
+  if (rate >= 0.6) return OptionCorrect;
+  if (rate >= 0.35) return OptionMiddle;
+  return OptionIncorrect;
 };
 
 // Figma "결과지_객관식+공동"(282:5171)의 객관식(INDIVIDUAL_OX) 콘텐츠 영역.
@@ -32,12 +21,12 @@ const ChoiceReportCard = ({
   totalCount = 0,
 }) => {
   const rate = totalCount > 0 ? correctCount / totalCount : 0;
-  const tier = getAccuracyTier(rate);
+  const tierImage = getAccuracyTierImage(rate);
 
   return (
     <div className="flex flex-col gap-4 px-5">
       <div className="flex flex-col items-start gap-2">
-        <img src={CorrectIcon} className="size-6" alt="" aria-hidden="true" />
+        <img src={ResultCheckIcon} className="size-6" alt="" aria-hidden="true" />
         <p className="whitespace-pre-wrap text-sub1-1 text-white">{question}</p>
       </div>
 
@@ -58,11 +47,7 @@ const ChoiceReportCard = ({
         </div>
       )}
 
-      <p
-        className={`whitespace-pre-wrap rounded-[20px] bg-gray-950 p-[15px] text-body2-2 ${tier.tone}`}
-      >
-        {tier.message}
-      </p>
+      <img src={tierImage} alt="" aria-hidden="true" className="w-full" />
     </div>
   );
 };

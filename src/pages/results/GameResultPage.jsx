@@ -15,6 +15,9 @@ const formatDate = (date = new Date()) =>
     date.getDate(),
   ).padStart(2, "0")}`;
 
+// 파일 시스템에서 쓸 수 없는 문자만 제거한다 (모임방/사람 이름은 자유 입력이라 슬래시 등이 섞일 수 있음).
+const sanitizeFileNamePart = (value = "") => value.replace(/[\\/:*?"<>|]+/g, "").trim();
+
 // Figma "게임 종료"(266:4430) -> "결과지_주관식+공동"(282:5051) / "결과지_객관식+공동"(282:5171)
 const GameResultPage = () => {
   const { roomCode } = useParams();
@@ -25,6 +28,7 @@ const GameResultPage = () => {
 
   const [phase, setPhase] = useState("ended"); // ended | loading | report
   const [cards, setCards] = useState([]);
+  const [myName, setMyName] = useState("");
   const [mockMode, setMockMode] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -38,6 +42,7 @@ const GameResultPage = () => {
     try {
       const result = await RoomAPI.getResult(roomCode, participantId);
       setCards(buildReportCards(result));
+      setMyName(result.participants?.find((p) => p.participantId === participantId)?.name ?? "");
       setMockMode(false);
     } catch (error) {
       console.error(
@@ -46,6 +51,11 @@ const GameResultPage = () => {
         error,
       );
       setCards(buildReportCards(MOCK_FINAL_RESULT));
+      setMyName(
+        MOCK_FINAL_RESULT.participants.find((p) => p.participantId === participantId)?.name ??
+          MOCK_FINAL_RESULT.participants[0]?.name ??
+          "",
+      );
       setMockMode(true);
     }
 
@@ -59,8 +69,13 @@ const GameResultPage = () => {
     setSaving(true);
     try {
       const dataUrl = await toPng(node, { pixelRatio: 2, backgroundColor: "#101012" });
+      const fileName = [roomName, myName, date]
+        .map(sanitizeFileNamePart)
+        .filter(Boolean)
+        .join("-");
+
       const link = document.createElement("a");
-      link.download = `impress-result-${activeIndex + 1}.png`;
+      link.download = `${fileName || `impress-result-${activeIndex + 1}`}.png`;
       link.href = dataUrl;
       link.click();
     } catch (error) {
