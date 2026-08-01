@@ -4,11 +4,12 @@ import PersonalGameOptions from "@components/games/PersonalGameOptions";
 
 const PersonalChoiceGamePage = () => {
   return (
-    <GameBackground>
+    <>
+      <GameBackground />
       {/** Header */}
       <ChoiceGameTitle></ChoiceGameTitle>
       <PersonalGameOptions></PersonalGameOptions>
-    </GameBackground>
+    </>
   );
 };
 

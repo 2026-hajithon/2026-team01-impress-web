@@ -3,10 +3,11 @@ import GameBackground from "./GameBackground";
 
 const PersonalAnswerGamePage = () => {
   return (
-    <GameBackground>
+    <>
+      <GameBackground />
       {/** Header */}
       <AnswerGameTitle></AnswerGameTitle>
-    </GameBackground>
+    </>
   );
 };
 

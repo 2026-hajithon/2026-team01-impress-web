@@ -4,10 +4,14 @@ import GameBackground from "./GameBackground";
 
 const GeneralChoiceGamePage = () => {
   return (
-    <GameBackground>
-      <ChoiceGameTitle></ChoiceGameTitle>
-      <GeneralGameOptions></GeneralGameOptions>
-    </GameBackground>
+    <>
+      <GameBackground />
+      {/** Header */}
+      <div className="flex flex-col gap-8">
+        <ChoiceGameTitle></ChoiceGameTitle>
+        <GeneralGameOptions></GeneralGameOptions>
+      </div>
+    </>
   );
 };
 

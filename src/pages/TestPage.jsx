@@ -1,11 +1,13 @@
-import AnswerGameTitle from "@components/games/AnswerGameTitle";
-import ChoiceGameTitle from "@components/games/ChoiceGameTitle";
+import GeneralChoiceGamePage from "./games/GeneralChoiceGamePage";
+// import PersonalAnswerGamePage from "./games/PersonalAnswerGamePage";
+// import PersonalChoiceGamePage from "./games/PersonalChoiceGamePage";
 
 const TestPage = () => {
   return (
     <div className="flex flex-col gap-5 bg-black">
-      <AnswerGameTitle></AnswerGameTitle>
-      <ChoiceGameTitle></ChoiceGameTitle>
+      {/* <PersonalAnswerGamePage></PersonalAnswerGamePage>
+      <PersonalChoiceGamePage></PersonalChoiceGamePage> */}
+      <GeneralChoiceGamePage></GeneralChoiceGamePage>
     </div>
   );
 };
