@@ -1,8 +1,9 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+
 import HomePage from "@pages/HomePage";
 import StartPage from "@pages/StartPage";
 
-function App() {
+const App = () => {
   return (
     <BrowserRouter>
       <Routes>
@@ -11,6 +12,6 @@ function App() {
       </Routes>
     </BrowserRouter>
   );
-}
+};
 
 export default App;
