@@ -1,9 +1,20 @@
+import { Link } from "react-router-dom";
 import PersonalAnswerGamePage from "./games/PersonalAnswerGamePage";
 import PersonalChoiceGamePage from "./games/PersonalChoiceGamePage";
 import GeneralChoiceGamePage from "./games/GeneralChoiceGamePage";
 import AnswerResultPage from "./games/AnswerResultPage";
 import ChoiceResultPage from "./games/ChoiceResultPage";
 import VoteResultPage from "./games/VoteResultPage";
+import ReportCardView from "./games/ReportCardView";
+import { buildReportCards } from "./games/reportCards";
+import { MOCK_FINAL_RESULT } from "@apis/mockData";
+
+// 게임 종료 -> 결과지 화면은 실제 방(roomCode)이 있어야 라우팅되는 GameResultPage를 그대로 쓰는 게
+// 목 데이터 폴백까지 실제와 똑같이 확인할 수 있어서, 전체 플로우는 이 라우트로 보낸다.
+const TEST_ROOM_CODE = "TEST-ROOM";
+
+// 결과지 2종(주관식/객관식)을 캐러셀 없이 한 번에 훑어볼 수 있도록 목 데이터로 미리 만들어둔다.
+const REPORT_CARDS = buildReportCards(MOCK_FINAL_RESULT);
 
 const MOCK_PARTICIPANTS = [
   { participantId: 1, name: "김태현" },
@@ -15,8 +26,37 @@ const MOCK_PARTICIPANTS = [
 ];
 
 const TestPage = () => {
+  sessionStorage.setItem("participantId", "1");
+  sessionStorage.setItem("roomName", "테스트 모임방");
+
   return (
     <div className="flex flex-col gap-5 bg-black w-full">
+      <div className="flex flex-col gap-3 p-5">
+        <p className="text-body1-1 text-white">게임 종료 → 결과지 테스트</p>
+        <p className="text-body2-2 text-gray-400">
+          백엔드에 존재하지 않는 방 코드({TEST_ROOM_CODE})라 결과지 API 요청은 실패하고,
+          자동으로 목 데이터로 대체돼요.
+        </p>
+        <Link
+          to={`/rooms/${TEST_ROOM_CODE}/result`}
+          className="flex h-14 w-full items-center justify-center rounded-xl bg-main-gradient text-body1-2 text-white"
+        >
+          게임 종료 화면부터 보기
+        </Link>
+      </div>
+
+      <div className="flex flex-col gap-8 px-5 pb-5">
+        <p className="text-body1-1 text-white">결과지 미리보기 (주관식 · 객관식 둘 다)</p>
+        {REPORT_CARDS.map((card) => (
+          <div key={card.roundId} className="flex flex-col gap-2">
+            <p className="text-caption1-2 text-gray-400">
+              {card.qType === "BLANK" ? "① 주관식 결과지" : "② 객관식 결과지"}
+            </p>
+            <ReportCardView roomName="테스트 모임방" date="2025.08.09" card={card} />
+          </div>
+        ))}
+      </div>
+
       <PersonalAnswerGamePage
         roomName="하지톤 1팀"
         timeLeft={60}

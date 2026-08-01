@@ -99,3 +99,70 @@ export const MOCK_RESULTS = {
 
 // GameRoundPage가 순서대로 순환하며 보여줄 라운드 목록 (BLANK -> INDIVIDUAL_OX -> COMMON_VOTE -> 게임 종료)
 export const MOCK_ROUND_SEQUENCE = ["BLANK", "INDIVIDUAL_OX", "COMMON_VOTE"];
+
+// RoomAPI.getResult 실패 시(백엔드 미기동 등) GameResultPage가 대신 흘려보내는 목 최종 결과.
+export const MOCK_FINAL_RESULT = {
+  roomCode: "MOCK01",
+  roomName: "하지톤 1팀",
+  gameSessionId: 1,
+  participants: MOCK_PARTICIPANTS,
+  rounds: [
+    {
+      roundId: 1001,
+      roundOrder: 1,
+      qType: "BLANK",
+      targetId: 1,
+      targetName: "김태현",
+      question: "이 사람은 주말에 ____를 할 것 같은 인상이다!",
+      result: {
+        answers: [
+          { submitterId: 1, submitterName: "김태현", textAnswer: "카페에서 커피마시면서 조용히 공부" },
+          { submitterId: 2, submitterName: "김가빈", textAnswer: "계획 없이 차타고 놀러가기" },
+          {
+            submitterId: 4,
+            submitterName: "이혁",
+            textAnswer: "집에서 좋아하는 영화를 보면서 맛있는 음식을 시켜 먹을",
+          },
+          { submitterId: 6, submitterName: "유영주", textAnswer: "하루종일 게임만 쳐다보고 있을" },
+        ],
+      },
+    },
+    {
+      roundId: 1002,
+      roundOrder: 2,
+      qType: "INDIVIDUAL_OX",
+      targetId: 1,
+      targetName: "김태현",
+      question: "이 사람의 형제관계는\n어떻게 될까?",
+      result: {
+        trueAnswer: "남매",
+        optionCounts: { 남매: 2, 자매: 5, 외동: 0, 형제: 0 },
+        correctSubmitters: [
+          { participantId: 2, name: "김가빈" },
+          { participantId: 5, name: "윤소연" },
+        ],
+        wrongSubmitters: [
+          { participantId: 3, name: "김수현" },
+          { participantId: 4, name: "이혁" },
+          { participantId: 6, name: "유영주" },
+        ],
+      },
+    },
+    {
+      roundId: 1003,
+      roundOrder: 3,
+      qType: "COMMON_VOTE",
+      question: "어렸을 때, 가장 엄마 말을\n안들었을 것 같은 사람은?",
+      result: {
+        ranking: [
+          { participantId: 1, name: "김태현", votes: 3 },
+          { participantId: 2, name: "김가빈", votes: 2 },
+          { participantId: 3, name: "김수현", votes: 1 },
+          { participantId: 4, name: "이혁", votes: 1 },
+          { participantId: 5, name: "윤소연", votes: 0 },
+          { participantId: 6, name: "유영주", votes: 0 },
+        ],
+      },
+    },
+  ],
+};
