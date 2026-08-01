@@ -23,7 +23,7 @@ function Button({
       disabled={isDisabled}
       aria-busy={loading}
       className={[
-        "flex h-12 items-center justify-center rounded-xl px-5",
+        "flex h-14 items-center justify-center rounded-xl px-5",
         "text-body1-2 text-white",
         "transition-transform duration-100",
         "active:scale-[0.99]",
