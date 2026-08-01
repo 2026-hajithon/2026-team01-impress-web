@@ -1,21 +1,21 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import StartPage from "@pages/StartPage";
-import TestPage from "@pages/TestPage";
-import GameRoundPage from "@pages/games/GameRoundPage";
-import Layout from "./Layout";
 
-function App() {
+import HomePage from "@pages/HomePage";
+import StartPage from "@pages/StartPage";
+import EnterLeaderNamePage from "@pages/createRoom/EnterLeaderNamePage";
+import CreateRoomTitlePage from "@pages/createRoom/CreateRoomTitlePage";
+
+const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<TestPage />}></Route>
-          <Route path="/start" element={<StartPage />} />
-          <Route path="/rooms/:roomCode/round" element={<GameRoundPage />} />
-        </Route>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/start" element={<StartPage />} />
+        <Route path="/enter-leader-name" element={<EnterLeaderNamePage />} />
+        <Route path="/create-room-title" element={<CreateRoomTitlePage />} />
       </Routes>
     </BrowserRouter>
   );
-}
+};
 
 export default App;

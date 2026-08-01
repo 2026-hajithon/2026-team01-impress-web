@@ -1,4 +1,6 @@
 import Button from "@components/Button";
+import homeLogo from "@assets/Home/HomeLogo.svg";
+import homeTitle from "@assets/Home/HomeTitle.svg";
 
 const StartPage = () => {
     const handleCreateRoom = () => {
@@ -20,20 +22,33 @@ const StartPage = () => {
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2"
           aria-hidden="true"
-        />
+        >
+        </div>
 
         {/* 메인 로고 및 그래픽 영역 */}
-        <div className="relative flex flex-1 items-center justify-center px-5">
-          <div
-            className="aspect-square w-3/4 max-w-72"
-            aria-label="메인 로고 이미지 영역"
-          >
-            {/* 추후 디자이너에게 받은 이미지 삽입 */}
-          </div>
+        <div
+          className={[
+            "relative z-10 flex flex-1 flex-col items-center",
+            "justify-start gap-3",
+            "pt-[clamp(4rem,13dvh,7rem)]",
+          ].join(" ")}
+        >
+          <img
+            src={homeLogo}
+            alt=""
+            aria-hidden="true"
+            className="h-auto w-1/2 max-w-[195px]"
+          />
+
+          <img
+            src={homeTitle}
+            alt="I'm Press"
+            className="h-auto w-[62%] max-w-[243px]"
+          />
         </div>
 
         {/* 하단 버튼 영역 */}
-        <div className="relative flex flex-col gap-2 pt-2 px-5 pb-8">
+        <div className="relative z-10 flex flex-col gap-2 pt-2 px-5 pb-8">
           <Button
             variant="primary"
             onClick={handleCreateRoom}
