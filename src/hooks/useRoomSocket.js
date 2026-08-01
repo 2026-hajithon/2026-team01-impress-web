@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { socketClient } from "../apis/socketClient";
 import { RoomSocket } from "../apis/RoomSocket";
 import { ROOM_EVENT, SOCKET_STATUS } from "../utils/eventTypes";
-import { MOCK_PARTICIPANTS, MOCK_RESULTS, MOCK_ROUNDS, MOCK_ROUND_SEQUENCE } from "../apis/mockData";
+import {
+  MOCK_PARTICIPANTS,
+  createMockGameRounds,
+  createMockRoundResult,
+} from "../apis/mockData";
 import { RoomAPI } from "../apis/RoomAPI";
 
 // 개발 환경에서 이 시간(ms) 안에 웹소켓이 연결되지 않으면, 백엔드가 없다고 보고 목 데이터로 전환한다.
@@ -30,7 +34,7 @@ const MOCK_ACTION_DELAY_MS = 500;
  *   actions: {
  *     kick: (targetParticipantId: Number) => void,
  *     start: () => void,
- *     submitAnswer: (answer: {roundId: Number, textAnswer?: String, choiceAnswer?: String, pickedParticipantId?: Number}) => void,
+ *     submitAnswer: (answer: {roundId: Number, textAnswer?: String, selectedOptionId?: Number, pickedParticipantId?: Number}) => void,
  *     voteNext: (roundId: Number) => void,
  *   },
  * }}
@@ -56,7 +60,13 @@ const MOCK_ACTION_DELAY_MS = 500;
  *   );
  * }
  */
-export function useRoomSocket({ roomCode, participantId }) {
+export function useRoomSocket({
+  roomCode,
+  participantId,
+  forceMock = false,
+  mockHostName = "",
+  mockParticipants: suppliedMockParticipants,
+}) {
   const [status, setStatus] = useState(SOCKET_STATUS.DISCONNECTED);
   const [participants, setParticipants] = useState([]);
   const [round, setRound] = useState(null); // ROUND_START data
@@ -70,6 +80,7 @@ export function useRoomSocket({ roomCode, participantId }) {
   // setTimeout 콜백 안에서 최신 status를 읽기 위한 ref (effect 클로저는 마운트 시점 값을 들고 있으므로).
   const statusRef = useRef(status);
   const mockIndexRef = useRef(0);
+  const mockRoundsRef = useRef([]);
 
   useEffect(() => {
     statusRef.current = status;
@@ -77,6 +88,29 @@ export function useRoomSocket({ roomCode, participantId }) {
 
   useEffect(() => {
     if (!roomCode || !participantId) {
+      return undefined;
+    }
+
+    const mockParticipants = (
+      suppliedMockParticipants?.length ? suppliedMockParticipants : MOCK_PARTICIPANTS
+    ).map((participant) =>
+      participant.role === "HOST" && mockHostName
+        ? { ...participant, name: mockHostName }
+        : participant,
+    );
+    const startMockGame = () => {
+      mockIndexRef.current = 0;
+      mockRoundsRef.current = createMockGameRounds(mockParticipants);
+      setMockMode(true);
+      setParticipants(mockParticipants);
+      setRound(mockRoundsRef.current[0]);
+      setRoundResult(null);
+      setVoteUpdate(null);
+      setGameEnded(false);
+    };
+
+    if (forceMock) {
+      startMockGame();
       return undefined;
     }
 
@@ -97,10 +131,7 @@ export function useRoomSocket({ roomCode, participantId }) {
         );
 
         socketClient.disconnect();
-        mockIndexRef.current = 0;
-        setMockMode(true);
-        setParticipants(MOCK_PARTICIPANTS);
-        setRound(MOCK_ROUNDS[MOCK_ROUND_SEQUENCE[0]]);
+        startMockGame();
       }, MOCK_FALLBACK_DELAY_MS);
     }
 
@@ -162,7 +193,7 @@ export function useRoomSocket({ roomCode, participantId }) {
           break;
 
         case ROOM_EVENT.ROUND_RESULT:
-          // qType(BLANK/INDIVIDUAL_OX/COMMON_VOTE)에 따라 data.result 모양이 다르다 (5.3)
+          // qType(BLANK/INDIVIDUAL_CHOICE/COMMON_VOTE)에 따라 data.result 모양이 다르다 (5.3)
           setRoundResult(event.data);
           break;
 
@@ -193,7 +224,7 @@ export function useRoomSocket({ roomCode, participantId }) {
       unsubError();
       socketClient.disconnect();
     };
-  }, [roomCode, participantId]);
+  }, [forceMock, mockHostName, participantId, roomCode, suppliedMockParticipants]);
 
   // 4.3 강제 퇴장 — 방장만 노출: {myRole === "HOST" && <button onClick={() => actions.kick(id)} />}
   const kick = useCallback(
@@ -216,22 +247,30 @@ export function useRoomSocket({ roomCode, participantId }) {
     RoomSocket.startGame(roomCode);
   }, [roomCode, mockMode]);
 
-  // 5.2 답변 제출 — qType에 맞는 필드 하나만 채워서 호출 (textAnswer | choiceAnswer | pickedParticipantId)
+  // 5.2 답변 제출 — qType에 맞는 필드 하나만 채워서 호출 (textAnswer | selectedOptionId | pickedParticipantId)
   const submitAnswer = useCallback(
     (answer) => {
       if (mockMode) {
         console.log("%c[Mock] submitAnswer", "color:#8dacff", answer);
-        const qType = MOCK_ROUND_SEQUENCE[mockIndexRef.current];
+        const activeRound = mockRoundsRef.current[mockIndexRef.current];
 
         setTimeout(() => {
-          setRoundResult(MOCK_RESULTS[qType]);
+          setRoundResult(createMockRoundResult(activeRound, participants));
         }, MOCK_ACTION_DELAY_MS);
         return;
       }
       RoomSocket.submitAnswer(roomCode, answer);
     },
-    [roomCode, mockMode],
+    [mockMode, participants, roomCode],
   );
+
+  // 목 게임에서 제한 시간이 끝났을 때 서버의 ROUND_RESULT 이벤트를 대신 발생시킨다.
+  const finishRound = useCallback(() => {
+    if (!mockMode) return;
+
+    const activeRound = mockRoundsRef.current[mockIndexRef.current];
+    setRoundResult(createMockRoundResult(activeRound, participants));
+  }, [mockMode, participants]);
 
   // 5.4 다음 라운드 동의 — 결과 화면 "다음으로" 클릭 시, roundResult.roundId를 넘긴다
   const voteNext = useCallback(
@@ -242,15 +281,14 @@ export function useRoomSocket({ roomCode, participantId }) {
         setTimeout(() => {
           mockIndexRef.current += 1;
 
-          if (mockIndexRef.current >= MOCK_ROUND_SEQUENCE.length) {
+          if (mockIndexRef.current >= mockRoundsRef.current.length) {
             setGameEnded(true);
             return;
           }
 
-          const qType = MOCK_ROUND_SEQUENCE[mockIndexRef.current];
           setRoundResult(null);
           setVoteUpdate(null);
-          setRound(MOCK_ROUNDS[qType]);
+          setRound(mockRoundsRef.current[mockIndexRef.current]);
         }, MOCK_ACTION_DELAY_MS);
         return;
       }
@@ -260,8 +298,8 @@ export function useRoomSocket({ roomCode, participantId }) {
   );
 
   const actions = useMemo(
-    () => ({ kick, start, submitAnswer, voteNext }),
-    [kick, start, submitAnswer, voteNext],
+    () => ({ kick, start, submitAnswer, finishRound, voteNext }),
+    [finishRound, kick, start, submitAnswer, voteNext],
   );
 
   return {

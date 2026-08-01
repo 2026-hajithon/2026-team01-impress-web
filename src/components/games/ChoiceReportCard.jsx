@@ -12,7 +12,7 @@ const getAccuracyTierImage = (rate) => {
   return OptionIncorrect;
 };
 
-// Figma "결과지_객관식+공동"(282:5171)의 객관식(INDIVIDUAL_OX) 콘텐츠 영역.
+// Figma "결과지_객관식+공동"(282:5171)의 객관식(INDIVIDUAL_CHOICE) 콘텐츠 영역.
 const ChoiceReportCard = ({
   question,
   trueAnswer,

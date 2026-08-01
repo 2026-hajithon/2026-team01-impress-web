@@ -19,7 +19,7 @@ export const RoomAPI = {
       hostName: hostName,
       roomName: roomName,
     });
-    return response.data;
+    return response.data.data;
   },
 
   /**
@@ -37,7 +37,7 @@ export const RoomAPI = {
     const response = await axiosClient.post(`/api/rooms/${roomCode}/join`, {
       name: name,
     });
-    return response.data;
+    return response.data.data;
   },
 
   /**
@@ -50,8 +50,8 @@ export const RoomAPI = {
    * @param {String} roomCode
    * @param {Number} participantId
    * @returns {{roomStatus: String, myRole: String, participants: {participantId: String, name: String, role: String, connectionStatus: String}[]} |
-   * {roomStatus: String, myRole: String, currentRound: {roundId: Number, roundOrder: Number, totalRounds: Number, qType: String, phase: String, timeRemaining: Number, myAnswerSubmitted: boolean, question: String, targetId: Number}} |
-   * {roomStatus: String, myRole: String, currentRound: {roundId: Number, roundOrder: Number, totalRounds: Number, qType: String, phase: String, myNextVoteSubmitted: boolean, nextVoteCount: Number, nextVoteRequired: Number, question: String, targetId: Number, result: {trueAnswer: String, correctSubmitters: Array, wrongSubmitters: Array}}} |
+   * {roomStatus: String, myRole: String, currentRound: {roundId: Number, roundOrder: Number, totalRounds: Number, qType: String, phase: String, timeRemaining: Number, myAnswerSubmitted: boolean, mySelectedOptionId: Number|null, question: String, targetId: Number, options?: {optionId: Number, content: String, displayOrder: Number}[]}} |
+   * {roomStatus: String, myRole: String, currentRound: {roundId: Number, roundOrder: Number, totalRounds: Number, qType: String, phase: String, myNextVoteSubmitted: boolean, nextVoteCount: Number, nextVoteRequired: Number, question: String, targetId: Number, mySelectedOptionId: Number, result: {targetAnswerOptionId: Number, mostSelectedOptionIds: Number[], optionResults: {optionId: Number, content: String, displayOrder: Number, count: Number}[]}}} |
    * {roomStatus: String, myRole: String}}
    * @example
    * const state = await RoomAPI.syncStatus(roomCode, participantId);
@@ -70,13 +70,14 @@ export const RoomAPI = {
         "Participant-Id": participantId,
       },
     });
-    return response.data;
+    return response.data.data;
   },
 
   /**
    * 자발적 방 나가기. 대기방 화면의 "나가기" 버튼에서만 호출한다 — 게임 시작(PLAYING) 후에는
    * 서버가 거절하므로, useRoomSocket의 status/roomStatus를 보고 WAITING일 때만 버튼을 노출한다.
    * 성공하면 WebSocket 연결도 함께 끊어야 하므로 socketClient.disconnect()를 뒤이어 호출한다.
+   * 다른 엔드포인트와 달리 {success, message, data} wrapper 없이 {success: boolean}을 바로 반환한다 (API 명세 2.4).
    * @param {String} roomCode
    * @param {Number} participantId
    * @returns {{success: boolean}}
@@ -104,7 +105,9 @@ export const RoomAPI = {
    * @returns {{roomCode: String, roomName: String, gameSessionId: Number,
    * participants: {participantId: Number, name: String, role: String}[],
    * rounds: {roundId: Number, roundOrder: Number, qType: String, targetId: Number, targetName: String, question: String,
-   *  result: {answers: {submitterId: Number, submitterName: String, textAnswer: String}[]}}[]}}
+   *  result: {answers: {submitterId: Number, submitterName: String, textAnswer: String}[]} |
+   *  {targetAnswerOptionId: Number, mostSelectedOptionIds: Number[], optionResults: {optionId: Number, content: String, displayOrder: Number, count: Number}[]} |
+   *  {votes: {participantId: Number, participantName: String, count: Number}[]}}[]}}
    * @example
    * useEffect(() => {
    *   if (!gameEnded) return;
@@ -115,7 +118,7 @@ export const RoomAPI = {
     const response = await axiosClient.get(`/api/rooms/${roomCode}/result`, {
       headers: { "Participant-Id": participantId },
     });
-    return response.data;
+    return response.data.data;
   },
 
   // 1차 구현에서는 제외.

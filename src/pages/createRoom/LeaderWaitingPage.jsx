@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import deleteIcon from "@assets/Room/Delete.svg";
 import leaveRoomIcon from "@assets/Room/LeaveRoom.svg";
@@ -54,8 +55,17 @@ const initialParticipants = [
 ];
 
 const HostWaitingRoomPage = () => {
-  const [participants] =
-    useState(initialParticipants);
+  const navigate = useNavigate();
+  const { roomCode: routeRoomCode } = useParams();
+  const [participants] = useState(() => {
+    const hostName = sessionStorage.getItem("hostName");
+
+    if (!hostName) return initialParticipants;
+
+    return initialParticipants.map((participant) =>
+      participant.role === "HOST" ? { ...participant, name: hostName } : participant,
+    );
+  });
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -63,8 +73,7 @@ const HostWaitingRoomPage = () => {
   const roomName =
   sessionStorage.getItem("roomName") || "하지톤 1팀";
 
-  const roomCode =
-  sessionStorage.getItem("roomCode") || "0801";
+  const roomCode = routeRoomCode || sessionStorage.getItem("roomCode") || "0801";
 
   const handleShare = () => {
     setIsShareModalOpen(true);
@@ -83,8 +92,11 @@ const HostWaitingRoomPage = () => {
   };
 
   const handleConfirmLeave = () => {
-    // 추후 방 나가기 API 연결
     setIsLeaveModalOpen(false);
+    ["hostName", "roomName", "roomCode", "participantId", "role", "gameMode", "mockParticipants"].forEach(
+      (key) => sessionStorage.removeItem(key),
+    );
+    navigate("/start", { replace: true });
   };
 
   const handleKick = (participant) => {
@@ -101,7 +113,10 @@ const HostWaitingRoomPage = () => {
   };
 
   const handleStartGame = () => {
-    // 웹소켓 연결 후 게임 시작 이벤트 사용
+    sessionStorage.setItem("roomCode", roomCode);
+    sessionStorage.setItem("gameMode", "mock");
+    sessionStorage.setItem("mockParticipants", JSON.stringify(participants));
+    navigate(`/rooms/${roomCode}/countdown`);
   };
 
   return (
@@ -115,7 +130,7 @@ const HostWaitingRoomPage = () => {
         {/* 상단 모임 이름 */}
         <header className="shrink-0 px-2.5 pb-5 pt-12">
           <h1 className="text-head2-2 text-center text-white">
-            하지톤 1팀
+            {roomName}
           </h1>
         </header>
 

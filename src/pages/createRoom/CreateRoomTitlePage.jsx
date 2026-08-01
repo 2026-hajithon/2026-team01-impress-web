@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import createRoomDoneGraphic from "@assets/Room/CreateRoomDone.svg";
 import Modal from "@components/Modal";
@@ -11,12 +11,24 @@ import TextField from "@components/TextField";
 const CreateRoomTitlePage = () => {
   const [roomName, setRoomName] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [createdRoomCode, setCreatedRoomCode] = useState("");
 
+  const location = useLocation();
   const navigate = useNavigate();
 
   const handleCreateRoom = () => {
     if (!roomName.trim()) return;
 
+    const hostName = location.state?.hostName ?? sessionStorage.getItem("hostName") ?? "방장";
+    const roomCode = String(Math.floor(1000 + Math.random() * 9000));
+
+    sessionStorage.setItem("hostName", hostName);
+    sessionStorage.setItem("roomName", roomName.trim());
+    sessionStorage.setItem("roomCode", roomCode);
+    sessionStorage.setItem("participantId", "1");
+    sessionStorage.setItem("role", "HOST");
+    sessionStorage.setItem("gameMode", "mock");
+    setCreatedRoomCode(roomCode);
     setIsModalOpen(true);
   };
 
@@ -26,7 +38,8 @@ const CreateRoomTitlePage = () => {
 
   const handleInvite = () => {
     setIsModalOpen(false);
-    navigate("/leader-waiting");
+    const roomCode = createdRoomCode || sessionStorage.getItem("roomCode") || "LOCAL";
+    navigate(`/rooms/${roomCode}/waiting`);
   };
 
   const handlePrevious = () => {
@@ -71,6 +84,7 @@ const CreateRoomTitlePage = () => {
           <Button
             variant="primary"
             onClick={handleCreateRoom}
+            disabled={!roomName.trim()}
           >
             방 만들기
           </Button>

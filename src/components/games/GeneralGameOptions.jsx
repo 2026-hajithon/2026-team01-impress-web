@@ -23,6 +23,8 @@ const SelectedDecoration = () => (
 );
 
 const GameOption = ({ name, onClick, isSelected, disabled }) => {
+  const isDimmed = disabled && !isSelected;
+
   return (
     <button
       type="button"
@@ -30,10 +32,15 @@ const GameOption = ({ name, onClick, isSelected, disabled }) => {
       disabled={disabled}
       className={[
         "relative flex h-28.5 w-full items-center justify-center overflow-hidden rounded-[20px]",
-        "text-center text-head2-2 text-white",
-        "transition-colors hover:cursor-pointer disabled:cursor-not-allowed",
-        isSelected ? "bg-main-pink" : "bg-gray-950",
+        "text-center text-head2-2",
+        "transition-colors duration-200 hover:cursor-pointer disabled:cursor-not-allowed",
+        isSelected
+          ? "bg-main-pink text-white"
+          : isDimmed
+            ? "bg-gray-950/60 text-gray-900"
+            : "bg-gray-950 text-white",
       ].join(" ")}
+      aria-pressed={isSelected}
     >
       {isSelected && <SelectedDecoration />}
       <span className="relative">{name}</span>

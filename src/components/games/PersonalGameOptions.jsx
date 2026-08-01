@@ -32,26 +32,34 @@ const SelectedDecoration = () => (
 );
 
 const PersonalGameOptions = ({ options = [], selected, onSelect, disabled = false }) => {
+  const sortedOptions = [...options].sort((a, b) => a.displayOrder - b.displayOrder);
+
   return (
     <div className="flex w-full flex-1 flex-col gap-2.5 px-5">
-      {options.map((option, idx) => {
-        const isSelected = selected === option;
+      {sortedOptions.map((option) => {
+        const isSelected = selected === option.optionId;
+        const isDimmed = disabled && !isSelected;
 
         return (
           <button
-            key={idx}
+            key={option.optionId}
             type="button"
             disabled={disabled}
-            onClick={() => onSelect?.(option)}
+            onClick={() => onSelect?.(option.optionId)}
             className={[
               "relative flex flex-1 items-center justify-center overflow-hidden rounded-[30px] p-5",
-              "text-center text-head1-1 text-white",
-              "transition-colors hover:cursor-pointer disabled:cursor-not-allowed",
-              isSelected ? "bg-main-pink" : "bg-gray-950",
+              "text-center text-head1-1",
+              "transition-colors duration-200 hover:cursor-pointer disabled:cursor-not-allowed",
+              isSelected
+                ? "bg-main-pink text-white"
+                : isDimmed
+                  ? "bg-gray-950/60 text-gray-900"
+                  : "bg-gray-950 text-white",
             ].join(" ")}
+            aria-pressed={isSelected}
           >
             {isSelected && <SelectedDecoration />}
-            <span className="relative">{option}</span>
+            <span className="relative">{option.content}</span>
           </button>
         );
       })}
