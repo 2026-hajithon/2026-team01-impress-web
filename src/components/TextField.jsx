@@ -41,7 +41,7 @@ function TextField({
       <p
         id={messageId}
         aria-live="polite"
-        className="mt-1.5 min-h-4 text-caption1-2 text-main-pink"
+        className="px-1 mt-2.5 min-h-4 text-caption1-2 text-main-pink"
       >
         {message ?? ""}
       </p>
