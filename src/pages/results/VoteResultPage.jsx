@@ -11,33 +11,13 @@ import Rank5 from "@assets/Game/Rank/Rank5.svg";
 import Rank6 from "@assets/Game/Rank/Rank6.svg";
 import Rank7 from "@assets/Game/Rank/Rank7.svg";
 import Rank8 from "@assets/Game/Rank/Rank8.svg";
+import { resolveVoteRank } from "@utils/reportCards";
 
 const RANK_IMAGES = [Rank1, Rank2, Rank3, Rank4, Rank5, Rank6, Rank7, Rank8];
-
-// entry.rank가 이미 내려오면 그대로 쓰고(동점 처리를 서버가 맡음), 없을 때만
-// 앞에서부터 표를 비교해서 동점자는 같은 등수를 받도록 계산한다(1,2,2,4 방식).
-// votes는 count 내림차순으로 정렬되어 들어온다고 가정한다.
-const resolveRanks = (votes) => {
-  const ranks = [];
-
-  votes.forEach((entry, idx) => {
-    if (entry.rank !== undefined) {
-      ranks.push(entry.rank);
-    } else if (idx === 0) {
-      ranks.push(1);
-    } else {
-      const prevEntry = votes[idx - 1];
-      ranks.push(prevEntry.count === entry.count ? ranks[idx - 1] : idx + 1);
-    }
-  });
-
-  return ranks;
-};
 
 // Figma "공동질문 결과"(226:1763)
 const VoteResultPage = ({ roomName, question, votes = [], voteUpdate, onNext, onLeave }) => {
   const [voted, setVoted] = useState(false);
-  const ranks = resolveRanks(votes);
 
   const handleNext = () => {
     setVoted(true);
@@ -55,8 +35,8 @@ const VoteResultPage = ({ roomName, question, votes = [], voteUpdate, onNext, on
         </div>
 
         <div className="flex flex-col gap-5">
-          {votes.map((entry, idx) => {
-            const rank = ranks[idx];
+          {votes.map((entry) => {
+            const rank = resolveVoteRank(votes, entry.participantId, entry.participantName);
             const rankImage = RANK_IMAGES[Math.min(rank, RANK_IMAGES.length) - 1];
 
             return (

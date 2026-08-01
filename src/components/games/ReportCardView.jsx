@@ -24,8 +24,8 @@ const ReportCardView = forwardRef(({ roomName, date, card }, ref) => {
       <CommonVoteSection
         question={card.commonQuestion}
         totalVotes={card.commonTotalVotes}
-        topVotes={card.commonTopVotes}
-        stampNumber={card.stampNumber}
+        voteCount={card.commonVoteCount}
+        rank={card.commonRank}
       />
     </ResultCard>
   );

@@ -13,6 +13,27 @@ export const isSameOptionId = (left, right) =>
 
 const getOptionId = (option) => option?.optionId ?? option?.id;
 const getOptionContent = (option) => option?.content ?? option?.optionContent ?? option?.text;
+const getVoteParticipantId = (vote) => vote?.participantId ?? vote?.targetParticipantId;
+const getVoteParticipantName = (vote) => vote?.participantName ?? vote?.name;
+
+const findParticipantVote = (votes, participantId, participantName) =>
+  votes.find((vote) => isSameOptionId(getVoteParticipantId(vote), participantId)) ??
+  votes.find(
+    (vote) => participantName && getVoteParticipantName(vote) === participantName,
+  );
+
+// 서버가 DB의 rank를 내려주면 그대로 사용한다. rank가 없는 응답만 득표수 기준으로
+// 경쟁 순위(1, 2, 2, 4)를 계산하며, 배열 정렬 순서에는 의존하지 않는다.
+export const resolveVoteRank = (votes = [], participantId, participantName) => {
+  const targetVote = findParticipantVote(votes, participantId, participantName);
+  if (!targetVote) return null;
+
+  const serverRank = Number(targetVote.rank);
+  if (Number.isInteger(serverRank) && serverRank > 0) return serverRank;
+
+  const targetCount = Number(targetVote.count) || 0;
+  return 1 + votes.filter((vote) => (Number(vote.count) || 0) > targetCount).length;
+};
 
 // 개인 객관식은 문제 당사자를 제외한 답변 가능 인원을 3등분한다.
 // 예: 답변 가능 7명 -> 0~2 LOW, 3~4 MIDDLE, 5~7 HIGH.
@@ -34,12 +55,11 @@ export const buildReportCards = (result) => {
   const participantCount = result.participants?.length ?? 0;
   const commonRound = rounds.find((round) => round.qType === "COMMON_VOTE");
   const votes = commonRound?.result?.votes ?? [];
-  const commonTotalVotes = votes.reduce((sum, entry) => sum + (entry.count ?? 0), 0);
-  const commonTopVotes = Math.max(0, ...votes.map((entry) => entry.count ?? 0));
+  const commonTotalVotes = votes.reduce((sum, entry) => sum + (Number(entry.count) || 0), 0);
 
   return rounds
     .filter((round) => round.qType !== "COMMON_VOTE")
-    .map((round, index) => {
+    .map((round) => {
       const roundResult = round.result ?? {};
       const optionResults = roundResult.optionResults ?? [];
       const totalCount = optionResults.reduce((sum, option) => sum + (option.count ?? 0), 0);
@@ -58,6 +78,8 @@ export const buildReportCards = (result) => {
         getOptionContent(trueAnswerOption) ??
         roundResult.targetAnswerOptionContent ??
         roundResult.correctAnswer;
+      const participantVote = findParticipantVote(votes, round.targetId, round.targetName);
+      const commonRank = resolveVoteRank(votes, round.targetId, round.targetName);
 
       return {
         roundId: round.roundId,
@@ -77,8 +99,8 @@ export const buildReportCards = (result) => {
           : totalCount,
         commonQuestion: commonRound?.question,
         commonTotalVotes,
-        commonTopVotes,
-        stampNumber: index + 1,
+        commonVoteCount: Number(participantVote?.count) || 0,
+        commonRank,
       };
     });
 };
