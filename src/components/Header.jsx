@@ -1,10 +1,6 @@
-function Header({
-  title,
-  timer,
-  timerIcon,
-  rightSlot,
-  className = "",
-}) {
+import TimerIcon from "@assets/Game/GameClock.svg";
+
+function Header({ title, timer, rightSlot, className = "" }) {
   return (
     <header
       className={[
@@ -13,22 +9,13 @@ function Header({
         className,
       ].join(" ")}
     >
-      <h1 className="text-sub1-1 text-gray-200">
-        {title}
-      </h1>
+      <h1 className="text-sub1-1 text-gray-200">{title}</h1>
 
       {rightSlot ??
         (timer !== undefined && (
           <div className="flex shrink-0 items-center gap-1.5">
-            {timerIcon && (
-              <span className="flex size-6 items-center justify-center">
-                {timerIcon}
-              </span>
-            )}
-
-            <span className="text-head3-2 text-main-blue">
-              {timer}
-            </span>
+            <img src={TimerIcon}></img>
+            <span className="text-head3-2 text-main-blue">{timer}</span>
           </div>
         ))}
     </header>

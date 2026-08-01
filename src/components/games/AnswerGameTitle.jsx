@@ -1,7 +1,9 @@
+import Chip from "@components/Chip";
+
 const AnswerGameTitle = () => {
   return (
     <div className="flex flex-col gap-9 w-full items-center">
-      {/** Chip */}
+      <Chip size="large" prefix={"이혁"} children={"님에 대한 질문"}></Chip>
       <div className="flex flex-col gap-4 w-full items-center">
         <div className="text-white text-head1-1">질문 앞부분</div>
         <input

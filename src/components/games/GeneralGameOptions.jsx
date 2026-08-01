@@ -22,7 +22,7 @@ const PARTICIPANT_LIST = [
 
 const GeneralGameOptions = (/*participantList*/) => {
   return (
-    <div className="flex w-full px-5 gap-3">
+    <div className="grid w-full grid-cols-2 px-5 gap-3">
       {PARTICIPANT_LIST.map((participant, idx) => {
         return <GameOption name={participant.name} key={idx}></GameOption>;
       })}
