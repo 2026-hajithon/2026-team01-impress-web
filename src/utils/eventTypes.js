@@ -1,0 +1,17 @@
+export const ROOM_EVENT = Object.freeze({
+  PARTICIPANT_LIST_UPDATE: "PARTICIPANT_LIST_UPDATE",
+  PARTICIPANT_KICKED: "PARTICIPANT_KICKED",
+  ROUND_START: "ROUND_START",
+  ROUND_RESULT: "ROUND_RESULT",
+  NEXT_ROUND_VOTE_UPDATE: "NEXT_ROUND_VOTE_UPDATE",
+  GAME_END: "GAME_END",
+  ERROR: "ERROR",
+});
+
+export const SOCKET_STATUS = Object.freeze({
+  DISCONNECTED: "disconnected",
+  CONNECTING: "connecting",
+  CONNECTED: "connected",
+  RECONNECTING: "reconnecting",
+  ERROR: "error",
+});
