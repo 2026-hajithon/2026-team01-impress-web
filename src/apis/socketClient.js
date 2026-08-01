@@ -182,6 +182,10 @@ class SocketClient {
       return;
     }
 
+    if (import.meta.env.DEV) {
+      console.log(`%c[WS →] ${destination}`, "color:#6991ff", body);
+    }
+
     this.client.publish({
       destination,
       body: JSON.stringify(body),
@@ -195,6 +199,10 @@ class SocketClient {
 
       if (!event?.type) {
         throw new Error("이벤트에 type이 없습니다.");
+      }
+
+      if (import.meta.env.DEV) {
+        console.log(`%c[WS ←] ${event.type}`, "color:#3ec98b", event.data);
       }
 
       listeners.forEach((listener) => {
@@ -278,6 +286,13 @@ class SocketClient {
   }
 
   setStatus(status) {
+    if (import.meta.env.DEV) {
+      console.log(`%c[WS status] ${status}`, "color:#8dacff", {
+        roomCode: this.roomCode,
+        participantId: this.participantId,
+      });
+    }
+
     this.statusListeners.forEach((listener) => {
       listener(status);
     });

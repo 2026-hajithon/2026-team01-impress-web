@@ -6,7 +6,7 @@ const ChoiceGameTitle = ({ chipPrefix, chipChildren, title }) => {
       <div>
         <Chip size="large" prefix={chipPrefix} children={chipChildren}></Chip>
       </div>
-      <div className="flex flex-col gap-4 w-full items-center">
+      <div className="flex flex-col gap-4 w-full items-center px-5">
         <p className="text-white text-head1-1 whitespace-pre-wrap text-center">
           {title}
         </p>
