@@ -29,7 +29,7 @@ function TextField({
         aria-invalid={hasError}
         aria-describedby={message ? messageId : undefined}
         className={[
-          "h-12 w-full rounded-lg border px-4",
+          "h-13.5 w-full rounded-lg border px-4",
           "bg-gray-950 text-body1-2 text-white",
           "placeholder:text-gray-600",
           "outline-none transition-colors",
@@ -43,7 +43,7 @@ function TextField({
         aria-live="polite"
         className="px-1 mt-2.5 min-h-4 text-caption1-2 text-main-pink"
       >
-        {message ?? ""}
+        {message}
       </p>
     </div>
   );
