@@ -1,14 +1,15 @@
 import Chip from "@components/Chip";
 
-const ChoiceGameTitle = () => {
+const ChoiceGameTitle = ({ chipPrefix, chipChildren, title }) => {
   return (
-    <div className="flex flex-col gap-9 w-full items-center">
+    <div className="flex flex-col gap-5 w-full items-center">
       <div>
-        <Chip size="large" prefix={"이혁"} children={"님에 대한 질문"}></Chip>
+        <Chip size="large" prefix={chipPrefix} children={chipChildren}></Chip>
       </div>
-
       <div className="flex flex-col gap-4 w-full items-center">
-        <div className="text-white text-head1-1">질문이 있다고 할 때</div>
+        <p className="text-white text-head1-1 whitespace-pre-wrap text-center">
+          {title}
+        </p>
       </div>
     </div>
   );
