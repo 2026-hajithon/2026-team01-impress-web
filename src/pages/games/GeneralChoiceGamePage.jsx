@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ChoiceGameTitle from "@components/games/ChoiceGameTitle";
 import GeneralGameOptions from "@components/games/GeneralGameOptions";
-import GameBackground from "./GameBackground";
+import GameBackground from "@components/games/GameBackground";
 import Header from "@components/Header";
 
 const GeneralChoiceGamePage = ({

@@ -4,7 +4,7 @@ import HomePage from "@pages/HomePage";
 import StartPage from "@pages/StartPage";
 import EnterLeaderNamePage from "@pages/createRoom/EnterLeaderNamePage";
 import CreateRoomTitlePage from "@pages/createRoom/CreateRoomTitlePage";
-import GameResultPage from "@pages/games/GameResultPage";
+import GameResultPage from "@pages/results/GameResultPage";
 import TestPage from "@pages/TestPage";
 
 const App = () => {

@@ -4,9 +4,9 @@ import { useRoomSocket } from "@hooks/useRoomSocket";
 import PersonalAnswerGamePage from "./PersonalAnswerGamePage";
 import PersonalChoiceGamePage from "./PersonalChoiceGamePage";
 import GeneralChoiceGamePage from "./GeneralChoiceGamePage";
-import AnswerResultPage from "./AnswerResultPage";
-import ChoiceResultPage from "./ChoiceResultPage";
-import VoteResultPage from "./VoteResultPage";
+import AnswerResultPage from "@pages/results/AnswerResultPage";
+import ChoiceResultPage from "@pages/results/ChoiceResultPage";
+import VoteResultPage from "@pages/results/VoteResultPage";
 
 const Q_TYPE = {
   BLANK: "BLANK",

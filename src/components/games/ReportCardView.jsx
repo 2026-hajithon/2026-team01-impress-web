@@ -3,7 +3,7 @@ import ResultCard from "./ResultCard";
 import AnswerReportCard from "./AnswerReportCard";
 import ChoiceReportCard from "./ChoiceReportCard";
 import CommonVoteSection from "./CommonVoteSection";
-import { mostVotedOptionOf } from "./reportCards";
+import { mostVotedOptionOf } from "@utils/reportCards";
 
 // buildReportCards()가 만든 카드 1장(주관식 또는 객관식 + 공동질문)을 실제로 그린다.
 const ReportCardView = forwardRef(({ roomName, date, card }, ref) => {

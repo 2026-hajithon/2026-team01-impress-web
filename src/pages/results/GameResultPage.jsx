@@ -3,10 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toPng } from "html-to-image";
 import { RoomAPI } from "@apis/RoomAPI";
 import { MOCK_FINAL_RESULT } from "@apis/mockData";
-import GameBackground from "./GameBackground";
+import GameBackground from "@components/games/GameBackground";
 import GameEndPage from "./GameEndPage";
-import ReportCardView from "./ReportCardView";
-import { buildReportCards } from "./reportCards";
+import ReportCardView from "@components/games/ReportCardView";
+import { buildReportCards } from "@utils/reportCards";
 import Header from "@components/Header";
 import Button from "@components/Button";
 

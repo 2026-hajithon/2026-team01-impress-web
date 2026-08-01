@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Chip from "@components/Chip";
-import GameBackground from "./GameBackground";
+import GameBackground from "@components/games/GameBackground";
 import Header from "@components/Header";
 import Button from "@components/Button";
 import CorrectIcon from "@assets/Game/Correct.svg";

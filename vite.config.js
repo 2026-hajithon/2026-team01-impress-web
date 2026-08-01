@@ -18,6 +18,7 @@ export default defineConfig({
       "@pages": getAliasPath("./src/pages"),
       "@hooks": getAliasPath("./src/hooks"),
       "@apis": getAliasPath("./src/apis"),
+      "@utils": getAliasPath("./src/utils"),
     },
   },
 });

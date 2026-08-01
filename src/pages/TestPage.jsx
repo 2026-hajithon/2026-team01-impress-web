@@ -2,11 +2,11 @@ import { Link } from "react-router-dom";
 import PersonalAnswerGamePage from "./games/PersonalAnswerGamePage";
 import PersonalChoiceGamePage from "./games/PersonalChoiceGamePage";
 import GeneralChoiceGamePage from "./games/GeneralChoiceGamePage";
-import AnswerResultPage from "./games/AnswerResultPage";
-import ChoiceResultPage from "./games/ChoiceResultPage";
-import VoteResultPage from "./games/VoteResultPage";
-import ReportCardView from "./games/ReportCardView";
-import { buildReportCards } from "./games/reportCards";
+import AnswerResultPage from "./results/AnswerResultPage";
+import ChoiceResultPage from "./results/ChoiceResultPage";
+import VoteResultPage from "./results/VoteResultPage";
+import ReportCardView from "@components/games/ReportCardView";
+import { buildReportCards } from "@utils/reportCards";
 import { MOCK_FINAL_RESULT } from "@apis/mockData";
 
 // 게임 종료 -> 결과지 화면은 실제 방(roomCode)이 있어야 라우팅되는 GameResultPage를 그대로 쓰는 게

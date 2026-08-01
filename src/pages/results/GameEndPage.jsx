@@ -1,4 +1,4 @@
-import GameBackground from "./GameBackground";
+import GameBackground from "@components/games/GameBackground";
 import Button from "@components/Button";
 import TimesUpIcon from "@assets/Game/GameTimesUp.svg";
 

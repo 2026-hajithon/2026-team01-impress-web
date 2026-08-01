@@ -1,6 +1,6 @@
 import { useState } from "react";
 import AnswerGameTitle from "@components/games/AnswerGameTitle";
-import GameBackground from "./GameBackground";
+import GameBackground from "@components/games/GameBackground";
 import Header from "@components/Header";
 import Button from "@components/Button";
 
