@@ -107,7 +107,8 @@ export const RoomAPI = {
    * rounds: {roundId: Number, roundOrder: Number, qType: String, targetId: Number, targetName: String, question: String,
    *  result: {answers: {submitterId: Number, submitterName: String, textAnswer: String}[]} |
    *  {targetAnswerOptionId: Number, mostSelectedOptionIds: Number[], optionResults: {optionId: Number, content: String, displayOrder: Number, count: Number}[]} |
-   *  {votes: {participantId: Number, participantName: String, count: Number, rank?: Number}[]}}[]}}
+   *  {trueAnswer: String, correctSubmitters: {submitterId: Number, submitterName: String}[], wrongSubmitters: {submitterId: Number, submitterName: String}[]} |
+   *  {votes: {participantId: Number, participantName: String, count: Number}[]}}[]}}
    * @example
    * useEffect(() => {
    *   if (!gameEnded) return;

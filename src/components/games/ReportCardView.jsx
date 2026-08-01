@@ -21,12 +21,14 @@ const ReportCardView = forwardRef(({ roomName, date, card }, ref) => {
           eligibleAnswerCount={card.eligibleAnswerCount}
         />
       )}
-      <CommonVoteSection
-        question={card.commonQuestion}
-        totalVotes={card.commonTotalVotes}
-        voteCount={card.commonVoteCount}
-        rank={card.commonRank}
-      />
+      {card.commonResult && (
+        <CommonVoteSection
+          question={card.commonResult.question}
+          totalVotes={card.commonResult.totalVotes}
+          voteCount={card.commonResult.voteCount}
+          rank={card.commonResult.rank}
+        />
+      )}
     </ResultCard>
   );
 });

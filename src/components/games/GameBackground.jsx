@@ -21,7 +21,7 @@ const GameBackground = () => {
       <img
         src={StarLarge}
         alt=""
-        className="absolute bottom-[-110px] left-[220px] size-[280px] rotate-[-165deg] mix-blend-hard-light"
+        className="absolute bottom-[-70px] left-[220px] size-[280px] rotate-[-165deg] mix-blend-hard-light"
       />
       <img
         src={StarSmall}

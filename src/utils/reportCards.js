@@ -26,7 +26,12 @@ const findParticipantVote = (votes, participantId, participantName) =>
 // 경쟁 순위(1, 2, 2, 4)를 계산하며, 배열 정렬 순서에는 의존하지 않는다.
 export const resolveVoteRank = (votes = [], participantId, participantName) => {
   const targetVote = findParticipantVote(votes, participantId, participantName);
-  if (!targetVote) return null;
+  // 서버 집계는 득표한 참가자만 votes에 포함한다. 대상자가 목록에 없으면 0표로 보고,
+  // 0표보다 많이 받은 참가자 수 다음의 공동 순위를 부여한다.
+  if (!targetVote) {
+    if (participantId == null && !participantName) return null;
+    return 1 + votes.filter((vote) => (Number(vote.count) || 0) > 0).length;
+  }
 
   const serverRank = Number(targetVote.rank);
   if (Number.isInteger(serverRank) && serverRank > 0) return serverRank;
@@ -54,8 +59,6 @@ export const buildReportCards = (result) => {
   const rounds = result.rounds ?? [];
   const participantCount = result.participants?.length ?? 0;
   const commonRound = rounds.find((round) => round.qType === "COMMON_VOTE");
-  const votes = commonRound?.result?.votes ?? [];
-  const commonTotalVotes = votes.reduce((sum, entry) => sum + (Number(entry.count) || 0), 0);
 
   return rounds
     .filter((round) => round.qType !== "COMMON_VOTE")
@@ -77,9 +80,31 @@ export const buildReportCards = (result) => {
       const trueAnswer =
         getOptionContent(trueAnswerOption) ??
         roundResult.targetAnswerOptionContent ??
-        roundResult.correctAnswer;
-      const participantVote = findParticipantVote(votes, round.targetId, round.targetName);
-      const commonRank = resolveVoteRank(votes, round.targetId, round.targetName);
+        roundResult.correctAnswer ??
+        roundResult.trueAnswer;
+      const correctSubmitterCount = roundResult.correctSubmitters?.length ?? 0;
+      const wrongSubmitterCount = roundResult.wrongSubmitters?.length ?? 0;
+      const hasSubmitterSummary =
+        Array.isArray(roundResult.correctSubmitters) ||
+        Array.isArray(roundResult.wrongSubmitters);
+      const commonVotes = commonRound?.result?.votes ?? [];
+      const participantVote = findParticipantVote(
+        commonVotes,
+        round.targetId,
+        round.targetName,
+      );
+      const commonResult = commonRound
+        ? {
+            roundId: commonRound.roundId,
+            question: commonRound.question,
+            totalVotes: commonVotes.reduce(
+              (sum, entry) => sum + (Number(entry.count) || 0),
+              0,
+            ),
+            voteCount: Number(participantVote?.count) || 0,
+            rank: resolveVoteRank(commonVotes, round.targetId, round.targetName),
+          }
+        : null;
 
       return {
         roundId: round.roundId,
@@ -92,15 +117,16 @@ export const buildReportCards = (result) => {
         mostVotedCount: mostVotedOption?.count,
         totalOptionVotes: totalCount,
         // 객관식 당사자의 선택은 정답을 결정하기 위해 필요하지만 정답자 수에는 포함하지 않는다.
-        correctCount: Math.max(0, (trueAnswerOption?.count ?? 0) - 1),
+        correctCount: hasSubmitterSummary
+          ? correctSubmitterCount
+          : Math.max(0, (trueAnswerOption?.count ?? 0) - 1),
         totalCount,
-        eligibleAnswerCount: participantCount > 0
-          ? Math.max(0, participantCount - 1)
-          : totalCount,
-        commonQuestion: commonRound?.question,
-        commonTotalVotes,
-        commonVoteCount: Number(participantVote?.count) || 0,
-        commonRank,
+        eligibleAnswerCount: hasSubmitterSummary
+          ? correctSubmitterCount + wrongSubmitterCount
+          : participantCount > 0
+            ? Math.max(0, participantCount - 1)
+            : totalCount,
+        commonResult,
       };
     });
 };
